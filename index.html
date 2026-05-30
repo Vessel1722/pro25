@@ -6544,7 +6544,7 @@
       <section class="vg-admin-section active" id="vgAdminOrders">
         <div class="vg-admin-note vg-admin-ok"><b>Funcional con Supabase:</b> cuando el cliente abre WhatsApp con comprobante cargado, se crea pedido y se sube el archivo al bucket.</div>
         <div class="vg-admin-stats" id="vgAdminStats"></div>
-        <div class="vg-admin-tools"><input class="vg-admin-input" id="vgOrderSearch" placeholder="Buscar pedido..." oninput="vgAdminRenderOrders()"><select class="vg-admin-select" id="vgOrderFilter" onchange="vgAdminRenderOrders()"><option value="all">Todos</option><option value="pendiente">Pendiente</option><option value="validado">Validado</option><option value="entregado">Entregado</option><option value="cancelado">Cancelado</option></select><button class="vg-admin-btn" onclick="vgAdminLoadOrders()">Actualizar</button></div>
+        <div class="vg-admin-tools"><input class="vg-admin-input" id="vgOrderSearch" placeholder="Buscar pedido..." oninput="vgAdminRenderOrders()"><select class="vg-admin-select" id="vgOrderFilter" onchange="vgAdminRenderOrders()"><option value="all">Todos</option><option value="pendiente">Pendiente</option><option value="validado">Validado</option><option value="entregado">Entregado</option><option value="cancelado">Cancelado</option></select><button class="vg-admin-btn" onclick="vgAdminLoadOrders()">Actualizar</button><button class="vg-admin-btn primary" onclick="vgAdminCreateTestOrder()">Crear pedido prueba</button></div>
         <div id="vgAdminOrdersList"></div>
       </section>
       <section class="vg-admin-section" id="vgAdminProducts">
@@ -6710,65 +6710,214 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </script>
 
 
-<script id="vg-supabase-generic-order-capture-v42">
+
+
+<script id="vg-supabase-order-capture-v44">
 (function(){
 'use strict';
-async function createOrderFromClick(){
-  try{
-    if(!window.supabase) return;
-    const url=(window.VG_SUPABASE_URL||'').trim();
-    const anon=(window.VG_SUPABASE_ANON_KEY||'').trim();
-    if(!url || !anon || anon.includes('PEGA_AQUI')){
-      console.warn('[Vessel] Falta pegar anon public key en VG_SUPABASE_ANON_KEY.');
-      return;
-    }
-    const client=window.supabase.createClient(url,anon);
-    let items=[], total=0;
-    try{
-      if(Array.isArray(window.cart)){
-        items=window.cart.map(x=>({title:x.title||'',option:x.option||'',price:Number(x.price||0)}));
-      }
-    }catch(e){}
-    total=items.reduce((s,x)=>s+Number(x.price||0),0);
-    const rc=document.getElementById('retroCount'), rt=document.getElementById('retroTotal');
-    if((!items.length || total===0) && rc && rt){
-      const count=Number(String(rc.textContent||'0').replace(/[^\d]/g,''))||0;
-      const tv=Number(String(rt.textContent||'0').replace(/[^\d.]/g,''))||0;
-      if(count>0){items=[{title:'Colección Xbox Retro',option:count+' juego(s)',price:tv}];total=tv;}
-    }
-    if(!items.length){
-      const title=document.querySelector('#modalTitle,.modal-body h2')?.textContent?.trim()||'Pedido por WhatsApp';
-      items=[{title,option:'Consulta directa',price:0}];
-    }
-    const ins=await client.from('orders').insert({
-      source:'whatsapp-click',
-      status:'pendiente',
-      total,
-      items,
-      client_name:'Cliente WhatsApp',
-      client_phone:'',
-      notes:'Pedido registrado al abrir WhatsApp'
-    }).select().single();
-    if(ins.error){console.error('[Vessel] Error insert order:',ins.error);return;}
-    const input=document.getElementById('proofInput');
-    if(input && input.files && input.files[0]){
-      const file=input.files[0], ext=(file.name.split('.').pop()||'jpg').toLowerCase();
-      const path=`${ins.data.id}/${Date.now()}.${ext}`;
-      const up=await client.storage.from('comprobantes').upload(path,file,{upsert:true,contentType:file.type||'image/jpeg'});
-      if(!up.error){
-        const pub=client.storage.from('comprobantes').getPublicUrl(path);
-        await client.from('orders').update({proof:{filename:file.name,path,url:pub.data.publicUrl,size:file.size,type:file.type}}).eq('id',ins.data.id);
-      }else{console.error('[Vessel] Error upload proof:',up.error);}
-    }
-    console.info('[Vessel] Pedido registrado:',ins.data.id);
-  }catch(err){console.error('[Vessel] Error creando pedido:',err);}
+
+const LOG_PREFIX='[Vessel Supabase]';
+let lastCaptureAt=0;
+
+function supaConfig(){
+  return {
+    url:(window.VG_SUPABASE_URL || 'https://qlczzaajxvvkyuqqdjmu.supabase.co').trim(),
+    anon:(window.VG_SUPABASE_ANON_KEY || '').trim()
+  };
 }
+
+function supaClient(){
+  if(!window.supabase){
+    console.error(LOG_PREFIX,'No cargó supabase-js. Revisa internet/CDN.');
+    return null;
+  }
+  const cfg=supaConfig();
+  if(!cfg.url || !cfg.anon || cfg.anon.includes('PEGA_AQUI')){
+    console.error(LOG_PREFIX,'Falta URL o anon public key en el HTML.');
+    return null;
+  }
+  return window.supabase.createClient(cfg.url,cfg.anon);
+}
+
+function readCart(){
+  let items=[], total=0;
+  try{
+    if(Array.isArray(window.cart)){
+      items=window.cart.map(x=>({title:x.title||x.name||'',option:x.option||x.variant||'',price:Number(x.price||0)}));
+    }
+  }catch(e){}
+
+  total=items.reduce((s,x)=>s+Number(x.price||0),0);
+
+  const rc=document.getElementById('retroCount');
+  const rt=document.getElementById('retroTotal');
+  if((!items.length || total===0) && rc && rt){
+    const count=Number(String(rc.textContent||'0').replace(/[^\d]/g,''))||0;
+    const tv=Number(String(rt.textContent||'0').replace(/[^\d.]/g,''))||0;
+    if(count>0){
+      items=[{title:'Colección Xbox Retro',option:count+' juego(s)',price:tv}];
+      total=tv;
+    }
+  }
+
+  if(!items.length){
+    const modalTitle=document.querySelector('#modalTitle,.modal-body h2')?.textContent?.trim();
+    const selected=document.querySelector('.option.active,.option.selected,[aria-selected="true"]')?.textContent?.trim();
+    items=[{title:modalTitle||'Pedido por WhatsApp',option:selected||'Consulta directa',price:0}];
+  }
+
+  return {items,total};
+}
+
+async function uploadProof(client, orderId){
+  const input=document.getElementById('proofInput');
+  if(!input || !input.files || !input.files[0]) return null;
+
+  const file=input.files[0];
+  const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+  const path=`${orderId}/${Date.now()}.${ext}`;
+
+  const up=await client.storage.from('comprobantes').upload(path,file,{
+    upsert:true,
+    contentType:file.type||'image/jpeg'
+  });
+
+  if(up.error){
+    console.error(LOG_PREFIX,'Error subiendo comprobante:',up.error);
+    return null;
+  }
+
+  const pub=client.storage.from('comprobantes').getPublicUrl(path);
+  return {
+    filename:file.name,
+    path,
+    url:pub.data.publicUrl,
+    size:file.size,
+    type:file.type
+  };
+}
+
+window.vgCreateSupabaseOrder = async function(source){
+  const now=Date.now();
+  if(source !== 'test-admin' && now-lastCaptureAt < 2500){
+    console.warn(LOG_PREFIX,'Pedido ignorado para evitar duplicado.');
+    return null;
+  }
+  lastCaptureAt=now;
+
+  const client=supaClient();
+  if(!client) return null;
+
+  const cartData=readCart();
+  const payload={
+    source:source||'whatsapp-click',
+    status:'pendiente',
+    total:cartData.total,
+    items:cartData.items,
+    client_name:'Cliente WhatsApp',
+    client_phone:'',
+    notes: source==='test-admin' ? 'Pedido de prueba creado desde panel admin' : 'Pedido registrado antes de abrir WhatsApp'
+  };
+
+  console.info(LOG_PREFIX,'Creando pedido...',payload);
+
+  const ins=await client.from('orders').insert(payload).select().single();
+  if(ins.error){
+    console.error(LOG_PREFIX,'Error insertando pedido:',ins.error);
+    alert('Error guardando pedido en Supabase: '+ins.error.message);
+    return null;
+  }
+
+  const proof=await uploadProof(client, ins.data.id);
+  if(proof){
+    const upd=await client.from('orders').update({proof}).eq('id',ins.data.id);
+    if(upd.error) console.error(LOG_PREFIX,'Error actualizando comprobante:',upd.error);
+  }
+
+  console.info(LOG_PREFIX,'Pedido guardado:',ins.data.id);
+  return ins.data;
+};
+
+window.vgAdminCreateTestOrder = async function(){
+  try{
+    const order=await window.vgCreateSupabaseOrder('test-admin');
+    if(order){
+      alert('Pedido prueba creado: '+order.id);
+      if(typeof window.vgAdminLoadOrders==='function') await window.vgAdminLoadOrders();
+    }
+  }catch(e){
+    console.error(LOG_PREFIX,e);
+    alert('Error creando pedido prueba: '+(e.message||e));
+  }
+};
+
+function isWhatsappAction(el){
+  if(!el) return false;
+  const txt=(el.textContent||'').toLowerCase();
+  const href=(el.getAttribute('href')||'').toLowerCase();
+  const onclick=(el.getAttribute('onclick')||'').toLowerCase();
+  const cls=(el.className||'').toString().toLowerCase();
+  return href.includes('wa.me') || href.includes('whatsapp') ||
+         onclick.includes('whatsapp') || onclick.includes('buynow') || onclick.includes('buyretronow') ||
+         txt.includes('whatsapp') || txt.includes('comprar') || txt.includes('métodos de pago') || txt.includes('metodos de pago') ||
+         cls.includes('whatsapp') || cls.includes('checkout') || cls.includes('buy');
+}
+
+// Intercepta links directos a WhatsApp y guarda antes de navegar.
 document.addEventListener('click',function(e){
-  const el=e.target.closest('a,button'); if(!el) return;
-  const txt=(el.textContent||'').toLowerCase(), href=(el.getAttribute('href')||'').toLowerCase(), onc=(el.getAttribute('onclick')||'').toLowerCase();
-  const hit=href.includes('wa.me')||href.includes('whatsapp')||onc.includes('whatsapp')||txt.includes('whatsapp')||txt.includes('comprar')||txt.includes('métodos de pago')||txt.includes('metodos de pago');
-  if(hit) setTimeout(createOrderFromClick,20);
+  const el=e.target.closest('a,button');
+  if(!isWhatsappAction(el)) return;
+
+  const href=el && el.tagName==='A' ? el.getAttribute('href') : '';
+  if(href && (href.includes('wa.me') || href.toLowerCase().includes('whatsapp'))){
+    e.preventDefault();
+    window.vgCreateSupabaseOrder('whatsapp-link').finally(()=>{
+      window.open(href,'_blank');
+    });
+    return;
+  }
+
+  // Para botones con onclick, guarda inmediatamente. Si el onclick abre nueva pestaña, queda registrado.
+  window.vgCreateSupabaseOrder('button-click').catch(console.error);
 },true);
+
+// Si alguna función usa window.open para WhatsApp, también registra antes.
+const originalOpen=window.open;
+window.open=function(url,name,features){
+  try{
+    const s=String(url||'').toLowerCase();
+    if(s.includes('wa.me') || s.includes('whatsapp')){
+      window.vgCreateSupabaseOrder('window-open').catch(console.error);
+    }
+  }catch(e){}
+  return originalOpen.apply(window,arguments);
+};
+
+// Parches para funciones conocidas. Delay mínimo para dar tiempo al insert si la función navega.
+function patchKnownFunctions(){
+  ['sendPaymentWhatsApp','buyRetroNow','openWhatsAppGeneral'].forEach(fn=>{
+    if(typeof window[fn]==='function' && !window[fn].__vgPatched){
+      const old=window[fn];
+      const patched=function(){
+        const args=arguments;
+        window.vgCreateSupabaseOrder(fn).finally(()=>{
+          setTimeout(()=>old.apply(window,args),250);
+        });
+      };
+      patched.__vgPatched=true;
+      window[fn]=patched;
+      console.info(LOG_PREFIX,'Función parchada:',fn);
+    }
+  });
+}
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',patchKnownFunctions);
+}else{
+  patchKnownFunctions();
+}
+setTimeout(patchKnownFunctions,1000);
+setTimeout(patchKnownFunctions,2500);
 })();
 </script>
 
