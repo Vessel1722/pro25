@@ -6538,7 +6538,7 @@
       <button class="vg-admin-tab active" data-tab="orders">Compras</button>
       <button class="vg-admin-tab" data-tab="products">Artículos</button>
       <button class="vg-admin-tab" data-tab="setup">Supabase</button>
-      <button class="vg-admin-tab" data-tab="export">Exportar</button>
+      <button class="vg-admin-tab" data-tab="export">Exportar</button><button class="vg-admin-tab" data-tab="debug">Diagnóstico</button>
     </div>
     <div class="vg-admin-content">
       <section class="vg-admin-section active" id="vgAdminOrders">
@@ -6568,6 +6568,20 @@
         <div class="vg-admin-tools"><button class="vg-admin-btn primary" onclick="vgAdminExportOrders()">Exportar compras JSON</button><button class="vg-admin-btn" onclick="vgAdminExportCSV()">Exportar compras CSV</button></div>
         <textarea class="vg-admin-textarea" id="vgAdminExportBox"></textarea>
       </section>
+
+      <section class="vg-admin-section" id="vgAdminDebug">
+        <div class="vg-admin-note vg-admin-ok">
+          Usa esta pestaña para saber exactamente por qué Supabase no guarda pedidos.
+        </div>
+        <div class="vg-admin-tools">
+          <button class="vg-admin-btn primary" onclick="vgDebugTestConnection()">1. Probar conexión</button>
+          <button class="vg-admin-btn primary" onclick="vgDebugCreateOrder()">2. Crear pedido prueba</button>
+          <button class="vg-admin-btn" onclick="vgDebugListOrders()">3. Leer pedidos</button>
+          <button class="vg-admin-btn danger" onclick="vgDebugClearLog()">Limpiar log</button>
+        </div>
+        <textarea class="vg-admin-textarea" id="vgDebugLog" style="min-height:320px" placeholder="Aquí saldrá el diagnóstico..."></textarea>
+      </section>
+
     </div>
   </div>
 </div>
@@ -6749,209 +6763,296 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 
 
-<script id="vg-supabase-order-capture-v44">
+
+
+<script id="vg-supabase-debug-v46">
 (function(){
 'use strict';
 
-const LOG_PREFIX='[Vessel Supabase]';
-let lastCaptureAt=0;
+const LOG_KEY = 'vg_supabase_debug_log_v1';
 
-function supaConfig(){
+function log(){
+  const line = Array.from(arguments).map(x => {
+    if(typeof x === 'string') return x;
+    try { return JSON.stringify(x); } catch(e){ return String(x); }
+  }).join(' ');
+  const stamp = new Date().toLocaleString('es-MX');
+  const current = localStorage.getItem(LOG_KEY) || '';
+  localStorage.setItem(LOG_KEY, current + '[' + stamp + '] ' + line + '\n');
+  const box = document.getElementById('vgDebugLog');
+  if(box) box.value = localStorage.getItem(LOG_KEY) || '';
+  console.log('[Vessel Debug]', line);
+}
+
+function showLog(){
+  const box = document.getElementById('vgDebugLog');
+  if(box) box.value = localStorage.getItem(LOG_KEY) || '';
+}
+
+window.vgDebugClearLog = function(){
+  localStorage.removeItem(LOG_KEY);
+  showLog();
+};
+
+function cfg(){
   return {
-    url:(window.VG_SUPABASE_URL || 'https://qlczzaajxvvkyuqqdjmu.supabase.co').trim(),
-    anon:(window.VG_SUPABASE_ANON_KEY || '').trim()
+    url: (window.VG_SUPABASE_URL || 'https://qlczzaajxvvkyuqqdjmu.supabase.co').trim(),
+    anon: (window.VG_SUPABASE_ANON_KEY || '').trim()
   };
 }
 
-function supaClient(){
+function client(){
   if(!window.supabase){
-    console.error(LOG_PREFIX,'No cargó supabase-js. Revisa internet/CDN.');
+    log('ERROR: No cargó la librería supabase-js. Revisa internet o bloqueo del CDN.');
     return null;
   }
-  const cfg=supaConfig();
-  if(!cfg.url || !cfg.anon || cfg.anon.includes('PEGA_AQUI')){
-    console.error(LOG_PREFIX,'Falta URL o anon public key en el HTML.');
+  const c = cfg();
+  log('Config URL:', c.url);
+  log('Anon key existe:', !!c.anon, 'Longitud:', c.anon.length);
+  if(!c.url || !c.anon || c.anon.includes('PEGA_AQUI')){
+    log('ERROR: falta configurar URL o ANON KEY en el HTML.');
     return null;
   }
-  return window.supabase.createClient(cfg.url,cfg.anon);
+  return window.supabase.createClient(c.url, c.anon);
 }
 
-function readCart(){
-  let items=[], total=0;
+function getCartData(){
+  let items = [];
+  let total = 0;
+
   try{
-    if(Array.isArray(window.cart)){
-      items=window.cart.map(x=>({title:x.title||x.name||'',option:x.option||x.variant||'',price:Number(x.price||0)}));
+    if(Array.isArray(window.cart) && window.cart.length){
+      items = window.cart.map(x => ({
+        title: x.title || x.name || 'Producto',
+        option: x.option || x.variant || '',
+        price: Number(x.price || 0)
+      }));
     }
-  }catch(e){}
+  }catch(e){ log('No se pudo leer window.cart:', e.message); }
 
-  total=items.reduce((s,x)=>s+Number(x.price||0),0);
+  total = items.reduce((s,x)=>s+Number(x.price||0),0);
 
-  const rc=document.getElementById('retroCount');
-  const rt=document.getElementById('retroTotal');
-  if((!items.length || total===0) && rc && rt){
-    const count=Number(String(rc.textContent||'0').replace(/[^\d]/g,''))||0;
-    const tv=Number(String(rt.textContent||'0').replace(/[^\d.]/g,''))||0;
-    if(count>0){
-      items=[{title:'Colección Xbox Retro',option:count+' juego(s)',price:tv}];
-      total=tv;
+  const rc = document.getElementById('retroCount');
+  const rt = document.getElementById('retroTotal');
+  if((!items.length || total === 0) && rc && rt){
+    const count = Number(String(rc.textContent||'0').replace(/[^\d]/g,'')) || 0;
+    const tv = Number(String(rt.textContent||'0').replace(/[^\d.]/g,'')) || 0;
+    if(count > 0){
+      items = [{title:'Colección Xbox Retro', option:count + ' juego(s)', price:tv}];
+      total = tv;
     }
   }
 
   if(!items.length){
-    const modalTitle=document.querySelector('#modalTitle,.modal-body h2')?.textContent?.trim();
-    const selected=document.querySelector('.option.active,.option.selected,[aria-selected="true"]')?.textContent?.trim();
-    items=[{title:modalTitle||'Pedido por WhatsApp',option:selected||'Consulta directa',price:0}];
+    const title = document.querySelector('#modalTitle,.modal-body h2')?.textContent?.trim() || 'Pedido por WhatsApp';
+    items = [{title, option:'Consulta directa', price:0}];
   }
 
   return {items,total};
 }
 
-async function uploadProof(client, orderId){
-  const input=document.getElementById('proofInput');
-  if(!input || !input.files || !input.files[0]) return null;
+async function insertOrder(payload){
+  const sb = client();
+  if(!sb) return null;
 
-  const file=input.files[0];
-  const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
-  const path=`${orderId}/${Date.now()}.${ext}`;
+  // Intento 1: payload completo compatible
+  log('Insertando pedido:', payload);
+  let res = await sb.from('orders').insert(payload).select().single();
 
-  const up=await client.storage.from('comprobantes').upload(path,file,{
+  // Si falla por columnas, intentamos mínimo.
+  if(res.error){
+    log('ERROR insert completo:', res.error.message);
+    const minimal = {
+      source: payload.source || 'whatsapp-click',
+      status: payload.status || 'pendiente',
+      total: payload.total || 0,
+      items: payload.items || []
+    };
+    log('Intentando insert mínimo:', minimal);
+    res = await sb.from('orders').insert(minimal).select().single();
+  }
+
+  if(res.error){
+    log('ERROR insert mínimo:', res.error.message, res.error);
+    alert('Supabase no guardó el pedido: ' + res.error.message);
+    return null;
+  }
+
+  log('Pedido creado OK:', res.data.id);
+  return res.data;
+}
+
+async function uploadProofIfAny(orderId){
+  const input = document.getElementById('proofInput');
+  if(!input || !input.files || !input.files[0]){
+    log('Sin comprobante cargado.');
+    return;
+  }
+
+  const sb = client();
+  if(!sb) return;
+
+  const file = input.files[0];
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const path = `${orderId}/${Date.now()}.${ext}`;
+
+  log('Subiendo comprobante:', file.name, path);
+  const up = await sb.storage.from('comprobantes').upload(path, file, {
     upsert:true,
-    contentType:file.type||'image/jpeg'
+    contentType:file.type || 'image/jpeg'
   });
 
   if(up.error){
-    console.error(LOG_PREFIX,'Error subiendo comprobante:',up.error);
-    return null;
+    log('ERROR comprobante:', up.error.message);
+    return;
   }
 
-  const pub=client.storage.from('comprobantes').getPublicUrl(path);
-  return {
-    filename:file.name,
-    path,
-    url:pub.data.publicUrl,
-    size:file.size,
-    type:file.type
-  };
+  const pub = sb.storage.from('comprobantes').getPublicUrl(path);
+  const proof = {filename:file.name,path,url:pub.data.publicUrl,size:file.size,type:file.type};
+  const upd = await sb.from('orders').update({proof}).eq('id', orderId);
+  if(upd.error) log('ERROR actualizando proof:', upd.error.message);
+  else log('Comprobante guardado OK.');
 }
 
 window.vgCreateSupabaseOrder = async function(source){
-  const now=Date.now();
-  if(source !== 'test-admin' && now-lastCaptureAt < 2500){
-    console.warn(LOG_PREFIX,'Pedido ignorado para evitar duplicado.');
-    return null;
-  }
-  lastCaptureAt=now;
-
-  const client=supaClient();
-  if(!client) return null;
-
-  const cartData=readCart();
-  const payload={
-    source:source||'whatsapp-click',
-    status:'pendiente',
-    total:cartData.total,
-    items:cartData.items
+  const data = getCartData();
+  const payload = {
+    source: source || 'whatsapp-click',
+    status: 'pendiente',
+    total: data.total,
+    items: data.items,
+    proof: null,
+    client_name: 'Cliente WhatsApp',
+    client_phone: '',
+    notes: 'Pedido registrado desde web'
   };
 
-  console.info(LOG_PREFIX,'Creando pedido...',payload);
-
-  const ins=await client.from('orders').insert(payload).select().single();
-  if(ins.error){
-    console.error(LOG_PREFIX,'Error insertando pedido:',ins.error);
-    console.error(LOG_PREFIX,'Error guardando pedido en Supabase:',ins.error.message);
-    return null;
-  }
-
-  const proof=await uploadProof(client, ins.data.id);
-  if(proof){
-    const upd=await client.from('orders').update({proof}).eq('id',ins.data.id);
-    if(upd.error) console.error(LOG_PREFIX,'Error actualizando comprobante:',upd.error);
-  }
-
-  console.info(LOG_PREFIX,'Pedido guardado:',ins.data.id);
-  return ins.data;
+  const order = await insertOrder(payload);
+  if(order && order.id) await uploadProofIfAny(order.id);
+  return order;
 };
 
-window.vgAdminCreateTestOrder = async function(){
-  try{
-    const order=await window.vgCreateSupabaseOrder('test-admin');
-    if(order){
-      alert('Pedido prueba creado: '+order.id);
-      if(typeof window.vgAdminLoadOrders==='function') await window.vgAdminLoadOrders();
-    }
-  }catch(e){
-    console.error(LOG_PREFIX,e);
-    alert('Error creando pedido prueba: '+(e.message||e));
+window.vgDebugTestConnection = async function(){
+  log('--- TEST CONEXIÓN ---');
+  const sb = client();
+  if(!sb) return;
+  const res = await sb.from('orders').select('id,created_at,status,total').limit(3);
+  if(res.error){
+    log('ERROR select orders:', res.error.message, res.error);
+    alert('Error conexión/select: ' + res.error.message);
+  }else{
+    log('Conexión OK. Pedidos leídos:', res.data.length, res.data);
+    alert('Conexión OK. Pedidos leídos: ' + res.data.length);
   }
 };
 
-function isWhatsappAction(el){
+window.vgDebugCreateOrder = async function(){
+  log('--- CREAR PEDIDO PRUEBA ---');
+  const order = await insertOrder({
+    source:'debug-test',
+    status:'pendiente',
+    total:1,
+    items:[{title:'Pedido prueba', option:'Diagnóstico', price:1}],
+    proof:null,
+    client_name:'Admin',
+    client_phone:'',
+    notes:'Pedido creado desde diagnóstico'
+  });
+  if(order){
+    alert('Pedido prueba creado: ' + order.id);
+    if(typeof window.vgAdminLoadOrders === 'function') await window.vgAdminLoadOrders();
+  }
+};
+
+window.vgAdminCreateTestOrder = window.vgDebugCreateOrder;
+
+window.vgDebugListOrders = async function(){
+  log('--- LEER PEDIDOS ---');
+  const sb = client();
+  if(!sb) return;
+  const res = await sb.from('orders').select('*').order('created_at',{ascending:false}).limit(10);
+  if(res.error){
+    log('ERROR list orders:', res.error.message);
+    alert('Error leyendo pedidos: ' + res.error.message);
+  }else{
+    log('Pedidos:', res.data);
+    alert('Pedidos encontrados: ' + res.data.length);
+  }
+};
+
+function isBuyClick(el){
   if(!el) return false;
   const txt=(el.textContent||'').toLowerCase();
   const href=(el.getAttribute('href')||'').toLowerCase();
   const onclick=(el.getAttribute('onclick')||'').toLowerCase();
   const cls=(el.className||'').toString().toLowerCase();
+
   return href.includes('wa.me') || href.includes('whatsapp') ||
-         onclick.includes('whatsapp') || onclick.includes('buynow') || onclick.includes('buyretronow') ||
-         txt.includes('whatsapp') || txt.includes('comprar') || txt.includes('métodos de pago') || txt.includes('metodos de pago') ||
-         cls.includes('whatsapp') || cls.includes('checkout') || cls.includes('buy');
+         onclick.includes('whatsapp') || onclick.includes('buyretronow') ||
+         txt.includes('whatsapp') || txt.includes('comprar') ||
+         txt.includes('métodos de pago') || txt.includes('metodos de pago') ||
+         cls.includes('whatsapp') || cls.includes('checkout');
 }
 
-// Intercepta links directos a WhatsApp y guarda antes de navegar.
-document.addEventListener('click',function(e){
-  const el=e.target.closest('a,button');
-  if(!isWhatsappAction(el)) return;
+let lastClickSave = 0;
+document.addEventListener('click', function(e){
+  const el = e.target.closest('a,button');
+  if(!isBuyClick(el)) return;
 
-  const href=el && el.tagName==='A' ? el.getAttribute('href') : '';
-  if(href && (href.includes('wa.me') || href.toLowerCase().includes('whatsapp'))){
-    e.preventDefault();
-    window.vgCreateSupabaseOrder('whatsapp-link').finally(()=>{
-      window.open(href,'_blank');
-    });
+  const now = Date.now();
+  if(now - lastClickSave < 2500){
+    log('Click compra ignorado por antidupe.');
     return;
   }
+  lastClickSave = now;
 
-  // Para botones con onclick, guarda inmediatamente. Si el onclick abre nueva pestaña, queda registrado.
-  window.vgCreateSupabaseOrder('button-click').catch(console.error);
-},true);
+  const href = el && el.tagName === 'A' ? el.getAttribute('href') : '';
+  log('Click compra detectado:', el.textContent?.trim(), href || '');
 
-// Si alguna función usa window.open para WhatsApp, también registra antes.
-const originalOpen=window.open;
-window.open=function(url,name,features){
+  if(href && (href.toLowerCase().includes('wa.me') || href.toLowerCase().includes('whatsapp'))){
+    e.preventDefault();
+    window.vgCreateSupabaseOrder('whatsapp-link').finally(()=>window.open(href,'_blank'));
+  }else{
+    window.vgCreateSupabaseOrder('button-click').catch(err => log('ERROR create order click:', err.message || err));
+  }
+}, true);
+
+const oldOpen = window.open;
+window.open = function(url,name,features){
   try{
-    const s=String(url||'').toLowerCase();
+    const s = String(url || '').toLowerCase();
     if(s.includes('wa.me') || s.includes('whatsapp')){
-      window.vgCreateSupabaseOrder('window-open').catch(console.error);
+      log('window.open WhatsApp detectado:', url);
+      window.vgCreateSupabaseOrder('window-open').catch(err => log('ERROR window.open order:', err.message || err));
     }
   }catch(e){}
-  return originalOpen.apply(window,arguments);
+  return oldOpen.apply(window, arguments);
 };
 
-// Parches para funciones conocidas. Delay mínimo para dar tiempo al insert si la función navega.
-function patchKnownFunctions(){
-  ['sendPaymentWhatsApp','buyRetroNow','openWhatsAppGeneral'].forEach(fn=>{
-    if(typeof window[fn]==='function' && !window[fn].__vgPatched){
-      const old=window[fn];
-      const patched=function(){
-        const args=arguments;
-        window.vgCreateSupabaseOrder(fn).finally(()=>{
-          setTimeout(()=>old.apply(window,args),250);
-        });
+function patchKnown(){
+  ['sendPaymentWhatsApp','buyRetroNow'].forEach(fn => {
+    if(typeof window[fn] === 'function' && !window[fn].__vgDebugPatched){
+      const old = window[fn];
+      const patched = function(){
+        const args = arguments;
+        log('Función compra detectada:', fn);
+        window.vgCreateSupabaseOrder(fn).finally(()=>setTimeout(()=>old.apply(window,args),250));
       };
-      patched.__vgPatched=true;
-      window[fn]=patched;
-      console.info(LOG_PREFIX,'Función parchada:',fn);
+      patched.__vgDebugPatched = true;
+      window[fn] = patched;
+      log('Función parchada:', fn);
     }
   });
 }
 
-if(document.readyState==='loading'){
-  document.addEventListener('DOMContentLoaded',patchKnownFunctions);
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', function(){ showLog(); patchKnown(); });
 }else{
-  patchKnownFunctions();
+  showLog();
+  patchKnown();
 }
-setTimeout(patchKnownFunctions,1000);
-setTimeout(patchKnownFunctions,2500);
+setTimeout(patchKnown,1000);
+setTimeout(patchKnown,2500);
 })();
 </script>
 
