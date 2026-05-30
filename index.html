@@ -13,7 +13,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="https://www.vesselgames.xyz/portada.png" />
   <link rel="preconnect" href="https://i.imgur.com" />
-  <link rel="preload" as="video" href="https://i.imgur.com/9j4rD8c.mp4" type="video/mp4" fetchpriority="high" /><style>
+  <link rel="preload" as="video" href="https://i.imgur.com/9j4rD8c.mp4" type="video/mp4" fetchpriority="high" /><script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=DYYS-pUjImV6RilekSxb7Ae3THB_s7xTAf2sWsal5OD-xZwMYeFwobnt7XQ9i8clkFWfMDo3R3XiHoAZknV25yaAEx77O8k2pdTmUZOvxxTmijmKP6KxaTn-l3ga4USW15xnDXKRXtBAILW3hevgXYPIy6ZCithmQtrqsdm2FPK8zSs8SyG105PTBKylzmX4yj3YrriVND2gPLHkkLDYwrpkTCNb3RWx8SRsa3tu4q95aV3MF0i4ryv2BiCGSjFFjF0wpdE-iIPA6tc9pL9CyQ" charset="UTF-8"></script><style>
     :root {
       --bg:#080a12; --panel:#111522; --panel2:#161b2b; --line:rgba(255,255,255,.10);
       --text:#f6f8ff; --muted:#aab2c8; --soft:#727b96; --brand:#8b5cf6; --brand2:#19e6c1;
@@ -6870,8 +6870,8 @@ function cleanSource(source){ const s=String(source||'web'); const map={"whatsap
 /* Login */
 function isLogged(){return sessionStorage.getItem(ADMIN_SESSION_KEY)==='1';}
 function loginMarkup(){return `<div class="vg-admin-login-card"><h3>Acceso administrador</h3><p>Ingresa correo y contraseña.</p><input class="vg-admin-input" id="vgAdminEmail" type="email" placeholder="Correo administrador"><input class="vg-admin-input" id="vgAdminPassword" type="password" placeholder="Contraseña"><button class="vg-admin-btn primary" onclick="vgAdminLogin()">Entrar</button></div>`}
-window.vgAdminLogin=function(){const e=($('#vgAdminEmail')?.value||'').trim().toLowerCase(),p=$('#vgAdminPassword')?.value||'';if(e===ADMIN_EMAIL&&p===ADMIN_PASSWORD){sessionStorage.setItem(ADMIN_SESSION_KEY,'1');window.vgAdminOpen();}else alert('Correo o contraseña incorrectos.')};
-window.vgAdminLogout=function(){sessionStorage.removeItem(ADMIN_SESSION_KEY);window.vgAdminOpen();};
+window.vgAdminLogin=function(){const e=($('#vgAdminEmail')?.value||'').trim().toLowerCase(),p=$('#vgAdminPassword')?.value||'';if(e===ADMIN_EMAIL&&p===ADMIN_PASSWORD){sessionStorage.setItem(ADMIN_SESSION_KEY,'1');location.reload();}else alert('Correo o contraseña incorrectos.')};
+window.vgAdminLogout=function(){sessionStorage.removeItem(ADMIN_SESSION_KEY);location.reload();};
 function ensureLogout(){if(!isLogged())return; if($('#vgAdminLogoutBtn'))return; const head=$('.vg-admin-head > div'); if(head){const b=document.createElement('button');b.id='vgAdminLogoutBtn';b.className='vg-admin-btn danger';b.textContent='Cerrar sesión';b.onclick=window.vgAdminLogout;head.appendChild(b);}}
 window.vgAdminOpen=function(){const modal=$('#vgAdminModal'); if(modal) modal.classList.add('active'); const content=$('#vgAdminModal .vg-admin-content'); if(!isLogged()){ if(content) content.innerHTML=loginMarkup(); return;} ensureSections(); ensureLogout(); bindTabs(); window.vgAdminLoadAll();};
 
@@ -6999,6 +6999,101 @@ window.vgAdminLoadAll=async function(){ if(typeof window.vgAdminLoadOrders==='fu
 function bindTabs(){ $$('.vg-admin-tab').forEach(btn=>{ btn.onclick=()=>{ $$('.vg-admin-tab').forEach(b=>b.classList.toggle('active',b===btn)); $$('.vg-admin-section').forEach(sec=>sec.classList.remove('active')); const sec=$('#vgAdmin'+btn.dataset.tab.charAt(0).toUpperCase()+btn.dataset.tab.slice(1)); if(sec) sec.classList.add('active'); if(btn.dataset.tab==='settings') renderSettings(); }; }); }
 document.addEventListener('DOMContentLoaded',()=>{ensureSections();bindTabs();renderSettings();});
 setTimeout(()=>{ensureSections();bindTabs();renderSettings();},600);
+})();
+</script>
+
+
+<style id="vg-admin-button-login-fix-v53">
+  .category-nav,
+  .category-row,
+  .category-tabs,
+  .nav-categories{
+    position:relative!important;
+  }
+
+  #vgAdminCornerBtn,
+  .vg-admin-corner-btn{
+    position:absolute!important;
+    right:28px!important;
+    top:50%!important;
+    transform:translateY(-50%)!important;
+    height:38px!important;
+    min-width:92px!important;
+    padding:0 14px!important;
+    border-radius:14px!important;
+    z-index:60!important;
+    font-size:.76rem!important;
+    font-weight:900!important;
+    background:linear-gradient(135deg,rgba(18,25,45,.95),rgba(8,48,52,.92))!important;
+    border:1px solid rgba(25,230,193,.28)!important;
+    box-shadow:0 10px 26px rgba(0,0,0,.28)!important;
+  }
+
+  #vgAdminCornerBtn.vg-admin-hidden,
+  .vg-admin-corner-btn.vg-admin-hidden{
+    opacity:0!important;
+    pointer-events:none!important;
+    transform:translateY(calc(-50% - 10px))!important;
+  }
+
+  @media(max-width:980px){
+    #vgAdminCornerBtn,
+    .vg-admin-corner-btn{
+      position:fixed!important;
+      top:auto!important;
+      right:14px!important;
+      bottom:84px!important;
+      transform:none!important;
+      height:42px!important;
+      min-width:104px!important;
+      border-radius:999px!important;
+      z-index:25000!important;
+    }
+  }
+</style>
+
+<script id="vg-admin-login-button-fix-v53">
+(function(){
+  const $=(s,r=document)=>r.querySelector(s);
+
+  function placeAdminButton(){
+    const btn=$('#vgAdminCornerBtn') || $('.vg-admin-corner-btn');
+    const nav=$('.category-nav') || $('.category-row') || $('.category-tabs') || $('.nav-categories');
+    if(btn && nav && btn.parentElement !== nav){
+      nav.appendChild(btn);
+    }
+  }
+
+  function addEnterKey(){
+    const pass=document.getElementById('vgAdminPassword');
+    if(pass && !pass.__vgEnterBind){
+      pass.__vgEnterBind=true;
+      pass.addEventListener('keydown',e=>{
+        if(e.key==='Enter' && typeof window.vgAdminLogin==='function'){
+          window.vgAdminLogin();
+        }
+      });
+    }
+  }
+
+  let lastY=window.scrollY||0;
+  window.addEventListener('scroll',()=>{
+    const btn=$('#vgAdminCornerBtn') || $('.vg-admin-corner-btn');
+    if(!btn) return;
+    const y=window.scrollY||0;
+    if(y>lastY+10 && y>90) btn.classList.add('vg-admin-hidden');
+    if(y<lastY-10 || y<70) btn.classList.remove('vg-admin-hidden');
+    lastY=y;
+  },{passive:true});
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    placeAdminButton();
+    addEnterKey();
+  });
+
+  setTimeout(placeAdminButton,200);
+  setTimeout(placeAdminButton,900);
+  setTimeout(addEnterKey,500);
 })();
 </script>
 
