@@ -6608,7 +6608,7 @@ async function createOrder(source){
  const client=needSB(); if(!client){console.warn('Supabase no configurado'); return null}
  let order=currentOrder(source);
  let proof=null;
- const {data,error}=await client.from('orders').insert({source:order.source,status:order.status,total:order.total,items:order.items,client_name:order.client_name,client_phone:order.client_phone,notes:order.notes}).select().single();
+ const {data,error}=await client.from('orders').insert({source:order.source,status:order.status,total:order.total,items:order.items}).select().single();
  if(error) throw error;
  try{ proof=await uploadProof(data.id); }catch(e){ console.error('Proof upload error',e); }
  if(proof){ await client.from('orders').update({proof}).eq('id',data.id); }
@@ -6644,11 +6644,12 @@ create table if not exists public.orders (
   status text default 'pendiente',
   total numeric default 0,
   items jsonb default '[]'::jsonb,
-  proof jsonb,
-  client_name text,
-  client_phone text,
-  notes text
+  proof jsonb
 );
+
+alter table public.orders add column if not exists client_name text;
+alter table public.orders add column if not exists client_phone text;
+alter table public.orders add column if not exists notes text;
 
 create table if not exists public.products_admin (
   product_id text primary key,
@@ -6669,14 +6670,50 @@ on conflict (id) do nothing;
 alter table public.orders enable row level security;
 alter table public.products_admin enable row level security;
 
-create policy "allow insert orders" on public.orders for insert to anon with check (true);
-create policy "allow read orders" on public.orders for select to anon using (true);
-create policy "allow update orders" on public.orders for update to anon using (true) with check (true);
+drop policy if exists "allow insert orders" on public.orders;
+drop policy if exists "allow read orders" on public.orders;
+drop policy if exists "allow update orders" on public.orders;
+drop policy if exists "allow products all" on public.products_admin;
+drop policy if exists "allow upload comprobantes" on storage.objects;
+drop policy if exists "allow read comprobantes" on storage.objects;
 
-create policy "allow products all" on public.products_admin for all to anon using (true) with check (true);
+create policy "allow insert orders"
+on public.orders
+for insert
+to anon
+with check (true);
 
-create policy "allow upload comprobantes" on storage.objects for insert to anon with check (bucket_id = 'comprobantes');
-create policy "allow read comprobantes" on storage.objects for select to anon using (bucket_id = 'comprobantes');
+create policy "allow read orders"
+on public.orders
+for select
+to anon
+using (true);
+
+create policy "allow update orders"
+on public.orders
+for update
+to anon
+using (true)
+with check (true);
+
+create policy "allow products all"
+on public.products_admin
+for all
+to anon
+using (true)
+with check (true);
+
+create policy "allow upload comprobantes"
+on storage.objects
+for insert
+to anon
+with check (bucket_id = 'comprobantes');
+
+create policy "allow read comprobantes"
+on storage.objects
+for select
+to anon
+using (bucket_id = 'comprobantes');
 `;
 function boot(){bind();vgAdminLoadConfig();initSB();patchWhats();setTimeout(patchWhats,1000);setTimeout(patchWhats,2500)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
@@ -6813,10 +6850,7 @@ window.vgCreateSupabaseOrder = async function(source){
     source:source||'whatsapp-click',
     status:'pendiente',
     total:cartData.total,
-    items:cartData.items,
-    client_name:'Cliente WhatsApp',
-    client_phone:'',
-    notes: source==='test-admin' ? 'Pedido de prueba creado desde panel admin' : 'Pedido registrado antes de abrir WhatsApp'
+    items:cartData.items
   };
 
   console.info(LOG_PREFIX,'Creando pedido...',payload);
@@ -6824,7 +6858,7 @@ window.vgCreateSupabaseOrder = async function(source){
   const ins=await client.from('orders').insert(payload).select().single();
   if(ins.error){
     console.error(LOG_PREFIX,'Error insertando pedido:',ins.error);
-    alert('Error guardando pedido en Supabase: '+ins.error.message);
+    console.error(LOG_PREFIX,'Error guardando pedido en Supabase:',ins.error.message);
     return null;
   }
 
