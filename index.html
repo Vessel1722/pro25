@@ -5120,6 +5120,14 @@
   <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
   <meta name="theme-color" content="#08090F">
 
+
+
+<script id="vg-supabase-public-config-v42">
+  window.VG_SUPABASE_URL = "https://qlczzaajxvvkyuqqdjmu.supabase.co";
+  window.VG_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFsY3p6YWFqeHZ2a3l1cXFkam11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MDY4OTMsImV4cCI6MjA5NDk4Mjg5M30.p5A25H8epCHRmxHQjuMWa1iO_4Qqg5w0aCrlI-Ehjhc";
+</script>
+
+
 </head>
 <body>
   <header class="topbar">
@@ -6576,7 +6584,7 @@ const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll
 const money=n=>'$'+Number(n||0).toLocaleString('es-MX',{maximumFractionDigits:0})+' MXN';
 const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(f))}catch(e){return f}};
 const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-function cfg(){return read(CFG,{url:'',anon:''})}
+function cfg(){let saved=read(CFG,{url:'',anon:''});return{url:saved.url||window.VG_SUPABASE_URL||'',anon:saved.anon||window.VG_SUPABASE_ANON_KEY||''}}
 function services(){try{if(typeof SERVICES!=='undefined'&&Array.isArray(SERVICES))return SERVICES}catch(e){} return Array.isArray(window.SERVICES)?window.SERVICES:[]}
 function cartItems(){try{if(typeof cart!=='undefined'&&Array.isArray(cart))return cart}catch(e){} return Array.isArray(window.cart)?window.cart:[]}
 function initSB(){let c=cfg(); if(!c.url||!c.anon||!window.supabase)return null; sb=window.supabase.createClient(c.url,c.anon); return sb}
@@ -6698,6 +6706,69 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       modal.classList.add('active');
     };
   }
+})();
+</script>
+
+
+<script id="vg-supabase-generic-order-capture-v42">
+(function(){
+'use strict';
+async function createOrderFromClick(){
+  try{
+    if(!window.supabase) return;
+    const url=(window.VG_SUPABASE_URL||'').trim();
+    const anon=(window.VG_SUPABASE_ANON_KEY||'').trim();
+    if(!url || !anon || anon.includes('PEGA_AQUI')){
+      console.warn('[Vessel] Falta pegar anon public key en VG_SUPABASE_ANON_KEY.');
+      return;
+    }
+    const client=window.supabase.createClient(url,anon);
+    let items=[], total=0;
+    try{
+      if(Array.isArray(window.cart)){
+        items=window.cart.map(x=>({title:x.title||'',option:x.option||'',price:Number(x.price||0)}));
+      }
+    }catch(e){}
+    total=items.reduce((s,x)=>s+Number(x.price||0),0);
+    const rc=document.getElementById('retroCount'), rt=document.getElementById('retroTotal');
+    if((!items.length || total===0) && rc && rt){
+      const count=Number(String(rc.textContent||'0').replace(/[^\d]/g,''))||0;
+      const tv=Number(String(rt.textContent||'0').replace(/[^\d.]/g,''))||0;
+      if(count>0){items=[{title:'Colección Xbox Retro',option:count+' juego(s)',price:tv}];total=tv;}
+    }
+    if(!items.length){
+      const title=document.querySelector('#modalTitle,.modal-body h2')?.textContent?.trim()||'Pedido por WhatsApp';
+      items=[{title,option:'Consulta directa',price:0}];
+    }
+    const ins=await client.from('orders').insert({
+      source:'whatsapp-click',
+      status:'pendiente',
+      total,
+      items,
+      client_name:'Cliente WhatsApp',
+      client_phone:'',
+      notes:'Pedido registrado al abrir WhatsApp'
+    }).select().single();
+    if(ins.error){console.error('[Vessel] Error insert order:',ins.error);return;}
+    const input=document.getElementById('proofInput');
+    if(input && input.files && input.files[0]){
+      const file=input.files[0], ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+      const path=`${ins.data.id}/${Date.now()}.${ext}`;
+      const up=await client.storage.from('comprobantes').upload(path,file,{upsert:true,contentType:file.type||'image/jpeg'});
+      if(!up.error){
+        const pub=client.storage.from('comprobantes').getPublicUrl(path);
+        await client.from('orders').update({proof:{filename:file.name,path,url:pub.data.publicUrl,size:file.size,type:file.type}}).eq('id',ins.data.id);
+      }else{console.error('[Vessel] Error upload proof:',up.error);}
+    }
+    console.info('[Vessel] Pedido registrado:',ins.data.id);
+  }catch(err){console.error('[Vessel] Error creando pedido:',err);}
+}
+document.addEventListener('click',function(e){
+  const el=e.target.closest('a,button'); if(!el) return;
+  const txt=(el.textContent||'').toLowerCase(), href=(el.getAttribute('href')||'').toLowerCase(), onc=(el.getAttribute('onclick')||'').toLowerCase();
+  const hit=href.includes('wa.me')||href.includes('whatsapp')||onc.includes('whatsapp')||txt.includes('whatsapp')||txt.includes('comprar')||txt.includes('métodos de pago')||txt.includes('metodos de pago');
+  if(hit) setTimeout(createOrderFromClick,20);
+},true);
 })();
 </script>
 
