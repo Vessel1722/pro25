@@ -7107,5 +7107,268 @@ document.addEventListener('DOMContentLoaded',guard);setTimeout(guard,500);
 })();
 </script>
 
+
+<style id="vg-hotfix-v48">
+  .category-nav{position:relative!important;padding-right:132px!important;overflow:visible!important}
+  .category-row{padding-right:132px!important}
+  #vgAdminCornerBtn,.vg-admin-corner-btn{
+    position:absolute!important;
+    top:10px!important;
+    right:18px!important;
+    left:auto!important;
+    bottom:auto!important;
+    height:38px!important;
+    min-width:96px!important;
+    padding:0 14px!important;
+    border-radius:14px!important;
+    font-size:.76rem!important;
+    font-weight:900!important;
+    letter-spacing:.04em!important;
+    background:linear-gradient(135deg,rgba(16,24,38,.92),rgba(10,38,41,.92))!important;
+    border:1px solid rgba(25,230,193,.28)!important;
+    box-shadow:0 10px 26px rgba(0,0,0,.28)!important;
+    backdrop-filter:blur(12px)!important;
+    transition:opacity .28s ease,transform .28s ease,filter .28s ease!important;
+    z-index:160!important;
+  }
+  #vgAdminCornerBtn:hover,.vg-admin-corner-btn:hover{transform:translateY(-1px)!important;filter:brightness(1.05)}
+  #vgAdminCornerBtn.vg-admin-hidden,.vg-admin-corner-btn.vg-admin-hidden{opacity:0!important;transform:translateY(-10px)!important;pointer-events:none!important}
+  .vg-admin-panel{width:min(1460px,calc(100vw - 18px))!important;height:min(95vh,980px)!important}
+  .vg-admin-content{padding:22px!important}
+  .vg-order-layout{grid-template-columns:minmax(0,1.6fr) minmax(420px,.8fr)!important}
+  .vg-order-preview{min-height:420px!important}
+  .vg-proof-preview-img{max-height:620px!important}
+  .vg-admin-table td{font-size:.86rem!important}
+  .vg-admin-mini-btn{white-space:nowrap}
+  @media(max-width:980px){
+    .category-nav{padding-right:0!important;overflow-x:auto!important}
+    .category-row{padding-right:0!important}
+    #vgAdminCornerBtn,.vg-admin-corner-btn{position:fixed!important;top:auto!important;right:14px!important;bottom:84px!important;height:42px!important;min-width:104px!important;border-radius:999px!important}
+    .vg-order-layout{grid-template-columns:1fr!important}
+  }
+</style>
+<script id="vg-hotfix-v48">
+(function(){
+  const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+  function moneyVal(v){ const n=Number(v||0); return isFinite(n)?n:0; }
+  function parseMoneyAny(v){
+    if(v==null) return 0;
+    if(typeof v==='number') return v;
+    const txt=String(v).replace(/MXN|USD|\$/gi,' ').replace(/,/g,'');
+    const m=txt.match(/-?\d+(?:\.\d+)?/);
+    return m?Number(m[0]):0;
+  }
+  function deriveTotal(o){
+    let total=moneyVal(o&&o.total);
+    if(total>0) return total;
+    if(Array.isArray(o?.items) && o.items.length){
+      total=o.items.reduce((s,it)=>s+parseMoneyAny(it?.price),0);
+      if(total>0) return total;
+    }
+    total=parseMoneyAny(o?.price_label||o?.subtotal||o?.amount);
+    if(total>0) return total;
+    if(typeof o?.product_option==='string'){
+      total=parseMoneyAny(o.product_option);
+      if(total>0) return total;
+    }
+    return 0;
+  }
+  function normalizeItems(items,o){
+    if(Array.isArray(items) && items.length){
+      return items.map(it=>({
+        title: it?.title||it?.name||o?.product_name||'Producto',
+        option: it?.option||it?.variant||o?.product_option||'',
+        price: parseMoneyAny(it?.price)
+      }));
+    }
+    return [{title:o?.product_name||'Pedido', option:o?.product_option||'Consulta directa', price:deriveTotal(o)}];
+  }
+  function itemLabelBetter(o){
+    const items=normalizeItems(o?.items,o);
+    const totalItems=items.length;
+    const first=items[0]||{};
+    const title=first.title||'Pedido';
+    const extra=totalItems>1?`<br><small>${totalItems} artículo(s)</small>`:(first.option?`<br><small>${first.option}</small>`:'');
+    return `${title}${extra}`;
+  }
+  function orderNum(o){ return '#'+String(o?.id||'').replace(/^#/,''); }
+  function orderSort(a,b){
+    const ta=new Date(a?.created_at||0).getTime()||0;
+    const tb=new Date(b?.created_at||0).getTime()||0;
+    if(tb!==ta) return tb-ta;
+    return Number(b?.id||0)-Number(a?.id||0);
+  }
+  function shouldHideOrder(o){
+    const src=String(o?.source||'').toLowerCase();
+    const total=deriveTotal(o);
+    const hiddenSources=['window-open','button-click','checkout-comprobante','whatsapp-link'];
+    if(hiddenSources.includes(src) && total<=0 && !(o?.proof?.url||o?.proof_url)) return true;
+    return false;
+  }
+  function moveAdminButton(){
+    const btn=$('#vgAdminCornerBtn')||$('.vg-admin-corner-btn');
+    const nav=$('.category-nav');
+    if(btn&&nav&&btn.parentElement!==nav) nav.appendChild(btn);
+  }
+  let lastY=window.scrollY||0;
+  function adminScrollFx(){
+    const btn=$('#vgAdminCornerBtn')||$('.vg-admin-corner-btn'); if(!btn) return;
+    const y=window.scrollY||0;
+    if(y>lastY+10 && y>90) btn.classList.add('vg-admin-hidden');
+    else if(y<lastY-10 || y<70) btn.classList.remove('vg-admin-hidden');
+    lastY=y;
+  }
+  window.addEventListener('scroll', adminScrollFx, {passive:true});
+  document.addEventListener('DOMContentLoaded', ()=>{moveAdminButton(); adminScrollFx();});
+  setTimeout(moveAdminButton, 250);
+  setTimeout(moveAdminButton, 1200);
+
+  // More reliable cart data / order creation
+  window.cartData=function(){
+    let items=[], total=0;
+    try{
+      if(window.pendingPaymentOrder && Array.isArray(window.pendingPaymentOrder.items) && window.pendingPaymentOrder.items.length){
+        items=window.pendingPaymentOrder.items.map(x=>({title:x.title||x.name||'Producto',option:x.option||x.variant||'',price:parseMoneyAny(x.price)}));
+        total=parseMoneyAny(window.pendingPaymentOrder.total);
+      }
+    }catch(e){}
+    if(!items.length){
+      try{
+        if(Array.isArray(window.cart)&&window.cart.length){
+          items=window.cart.map(x=>({title:x.title||x.name||x.product_name||'Producto',option:x.option||x.variant||'',price:parseMoneyAny(x.price)}));
+        }
+      }catch(e){}
+    }
+    if(!items.length){
+      const t=$('#modalTitle,.modal-body h2')?.textContent?.trim();
+      const sel=$('.option.active,.option.selected,[aria-selected="true"]')?.textContent?.trim();
+      const p=parseMoneyAny(sel||$('#payModalTotal')?.textContent||document.body.innerText||'');
+      if(t) items=[{title:t,option:sel||'Consulta directa',price:p}];
+    }
+    if(!total) total=parseMoneyAny($('#payModalTotal')?.textContent||'');
+    if(!total) total=items.reduce((s,x)=>s+parseMoneyAny(x.price),0);
+    const rc=$('#retroCount'), rt=$('#retroTotal');
+    if((!items.length || total===0) && rc && rt){
+      const c=parseMoneyAny(rc.textContent), tv=parseMoneyAny(rt.textContent);
+      if(c>0){ items=[{title:'Colección Xbox Retro', option:c+' juego(s)', price:tv}]; total=tv; }
+    }
+    if(!items.length) items=[{title:'Pedido por WhatsApp', option:'Consulta directa', price:total||0}];
+    if(!total) total=items.reduce((s,x)=>s+parseMoneyAny(x.price),0);
+    return {items,total};
+  };
+
+  window.vgCreateSupabaseOrder = async function(source){
+    const client = (typeof window.sb==='function'?window.sb():null);
+    if(!client){ alert('Supabase no está configurado o no cargó.'); return null; }
+    const d=window.cartData();
+    const first=d.items[0]||{};
+    const dedupeKey=JSON.stringify({src:source||'whatsapp-checkout',items:d.items,total:d.total});
+    const lastTry=window.__vgLastOrderTry||{};
+    if(lastTry.key===dedupeKey && Date.now()-lastTry.time<4000){ return lastTry.order||null; }
+    window.__vgLastOrderTry={key:dedupeKey,time:Date.now(),order:null};
+    const payload={
+      source:source||'whatsapp-checkout',
+      status:'pendiente',
+      total:d.total,
+      items:d.items,
+      proof:null,
+      client_name:'Cliente WhatsApp', client_phone:'', client_email:'',
+      customer_name:'Cliente WhatsApp', customer_phone:'', customer_email:'',
+      product_name:first.title||'Pedido',
+      product_option:first.option||'',
+      payment_method:'', proof_url:'',
+      notes:'Pedido registrado desde la web'
+    };
+    let r=await client.from('orders').insert(payload).select().single();
+    if(r.error){
+      console.error('[Vessel] insert completo falló:',r.error);
+      r=await client.from('orders').insert({
+        source:payload.source,status:payload.status,total:payload.total,items:payload.items,
+        product_name:payload.product_name,product_option:payload.product_option,
+        customer_email:'',customer_name:'Cliente WhatsApp'
+      }).select().single();
+    }
+    if(r.error){ alert('Supabase no guardó el pedido: '+r.error.message); return null; }
+    let proof=null;
+    try{ if(typeof window.uploadProof==='function') proof=await window.uploadProof(client,r.data.id); }catch(e){ console.warn(e); }
+    const out={...r.data,proof:proof||r.data.proof};
+    window.__vgLastOrderTry.order=out;
+    return out;
+  };
+
+  window.sendPaymentWhatsApp = async function(){
+    const d=window.cartData();
+    const order=await window.vgCreateSupabaseOrder('whatsapp-checkout');
+    if(!order) return;
+    const items=(d.items||[]).map((it,i)=>`${i+1}. ${it.title} - ${it.option||'Opción'} - $${parseMoneyAny(it.price)} MXN`).join('
+');
+    const total=`$${parseMoneyAny(d.total)} MXN`;
+    const text=`Hola, envío mi comprobante de pago.
+
+Pedido ${orderNum(order)}
+
+${items}
+
+Total: ${total}
+
+Adjunto comprobante en este chat.`;
+    const href=`https://wa.me/${window.WHATSAPP_NUMBER||''}?text=${encodeURIComponent(text)}`;
+    const a=document.createElement('a'); a.href=href; a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); a.remove();
+  };
+
+  // Override admin panel rendering/loading
+  window.vgShowProof=function(id){
+    const orders=(window.adminOrders||[]);
+    const o=orders.find(x=>String(x.id)===String(id));
+    const p=$('#vgOrderPreview');
+    if(!p||!o) return;
+    $$('.vg-admin-table tr').forEach(tr=>tr.classList.remove('vg-selected-order'));
+    document.querySelector(`[data-order-row="${id}"]`)?.classList.add('vg-selected-order');
+    const u=o.proof?.url||o.proof_url||'';
+    const total=deriveTotal(o);
+    p.innerHTML=`<h3>Pedido ${orderNum(o)}</h3>
+      <p><b>Total:</b> $${total} MXN<br><b>Estado:</b> ${o.status||'pendiente'}<br><b>Fuente:</b> ${o.source||''}<br><b>Fecha:</b> ${new Date(o.created_at).toLocaleString('es-MX')}</p>
+      <p><b>Artículos:</b><br>${itemLabelBetter(o)}</p>
+      ${u?`<a class="vg-admin-btn primary" href="${u}" target="_blank">Abrir comprobante</a><br><br><img class="vg-proof-preview-img" src="${u}" onerror="this.style.display='none'">`:'<p>No hay comprobante.</p>'}
+      <br><button class="vg-admin-btn" onclick="navigator.clipboard.writeText('Pedido ${orderNum(o)}')">Copiar número</button>`;
+  };
+
+  window.vgAdminRenderOrders=function(msg){
+    if(typeof window.logged==='function' && !window.logged()){ if(typeof window.guard==='function') window.guard(); return; }
+    const b=$('#vgAdminOrdersList'); if(!b) return;
+    let orders=(window.adminOrders||[]).slice().sort(orderSort).filter(o=>!shouldHideOrder(o));
+    if(msg){ b.innerHTML=`<div class="vg-admin-note">${msg}</div>`; return; }
+    const q=($('#vgOrderSearch')?.value||'').toLowerCase();
+    const f=$('#vgOrderFilter')?.value||'all';
+    orders=orders.filter(o=>(f==='all'||o.status===f) && (!q || JSON.stringify(o).toLowerCase().includes(q) || String(o.id).includes(q)));
+    if(!orders.length){ b.innerHTML='<div class="vg-admin-note">Sin compras registradas.</div>'; return; }
+    b.innerHTML=`<div class="vg-order-layout"><div><table class="vg-admin-table"><thead><tr><th>Pedido</th><th>Artículos</th><th>Total</th><th>Comprobante</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>${orders.map(o=>{const u=o.proof?.url||o.proof_url||'';const total=deriveTotal(o);const fname=(o.proof?.filename||u.split('/').pop()||'');return `<tr data-order-row="${o.id}"><td><span class="vg-order-id">Pedido ${orderNum(o)}</span><br><small>${new Date(o.created_at).toLocaleString('es-MX')}</small><br>${o.source||''}</td><td>${itemLabelBetter(o)}</td><td><b>$${total} MXN</b></td><td>${u?`<button class="vg-admin-mini-btn" onclick="vgShowProof('${o.id}')">Ver imagen</button><br><small>${fname}</small>`:'Sin comprobante'}</td><td><select class="vg-admin-select" onchange="vgAdminUpdateOrder('${o.id}',this.value)">${['pendiente','validado','entregado','cancelado'].map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}</select></td><td><button class="vg-admin-mini-btn" onclick="vgShowProof('${o.id}')">Detalle</button><button class="vg-admin-mini-btn" onclick="navigator.clipboard.writeText('Pedido ${orderNum(o)}')">Copiar ID</button></td></tr>`}).join('')}</tbody></table></div><aside class="vg-order-preview" id="vgOrderPreview"><h3>Selecciona un pedido</h3><p>Aquí podrás ver el comprobante, el total real y los datos del pedido.</p></aside></div>`;
+  };
+
+  window.vgAdminLoadOrders=async function(){
+    if(typeof window.logged==='function' && !window.logged()){ if(typeof window.guard==='function') window.guard(); return; }
+    const client=(typeof window.sb==='function'?window.sb():null); if(!client){ window.vgAdminRenderOrders('Supabase no configurado.'); return; }
+    const {data,error}=await client.from('orders').select('*').order('created_at',{ascending:false}).limit(500);
+    if(error){ window.vgAdminRenderOrders(error.message); return; }
+    const cleaned=(data||[]).map(o=>({...o,total:deriveTotal(o)})).sort(orderSort);
+    window.adminOrders=cleaned;
+    const visible=cleaned.filter(o=>!shouldHideOrder(o));
+    const total=visible.reduce((s,o)=>s+deriveTotal(o),0);
+    const pending=visible.filter(o=>String(o.status||'').toLowerCase()==='pendiente').length;
+    const proofs=visible.filter(o=>o.proof?.url||o.proof_url).length;
+    const stats=$('#vgAdminStats');
+    if(stats) stats.innerHTML=`<div class="vg-admin-stat"><b>${visible.length}</b><span>Compras</span></div><div class="vg-admin-stat"><b>$${total} MXN</b><span>Total</span></div><div class="vg-admin-stat"><b>${pending}</b><span>Pendientes</span></div><div class="vg-admin-stat"><b>${proofs}</b><span>Comprobantes</span></div>`;
+    window.vgAdminRenderOrders();
+  };
+
+  window.vgSaveQuickSettings=async function(){
+    const client=(typeof window.sb==='function'?window.sb():null); if(!client) return alert('Supabase no configurado.');
+    const payload={setting_key:'main',whatsapp:$('#vgSettingWhatsapp')?.value||'',delivery:$('#vgSettingDelivery')?.value||'',exchange_rate:Number($('#vgSettingRate')?.value||17),notice:$('#vgSettingNotice')?.value||'',updated_at:new Date().toISOString()};
+    const {error}=await client.from('site_settings').upsert(payload,{onConflict:'setting_key'});
+    if(error) alert('Error guardando ajustes: '+error.message); else alert('Ajustes guardados.');
+  };
+})();
+</script>
+
 </body>
 </html>
