@@ -5140,9 +5140,12 @@
 @media(max-width:980px){.vg-order-layout{grid-template-columns:1fr}.vg-order-preview{position:relative;top:0}.vg-admin-corner-btn,#vgAdminCornerBtn{position:fixed!important;top:auto!important;right:12px!important;bottom:86px!important;border-radius:999px!important;z-index:25000!important}}
 </style>
 
-<script id="vg-admin-auth-config-v47">
-window.VG_ADMIN_EMAIL="admin@vesselgames.com";
-window.VG_ADMIN_PASSWORD="Vessel2026!";
+
+
+<script id="vg-admin-auth-config-v52">
+window.VG_ADMIN_EMAIL = "admin@vesselgames.com";
+window.VG_ADMIN_PASSWORD = "Vessel2026!";
+window.WHATSAPP_NUMBER = "526611078412";
 </script>
 
 </head>
@@ -6645,7 +6648,7 @@ async function createOrder(source){
  if(proof){ await client.from('orders').update({proof}).eq('id',data.id); }
  return {...data,proof};
 }
-function patchWhats(){ /* v49: disabled old duplicate order wrapper */ }
+function patchWhats(){ /* v52 disabled duplicate Supabase order wrapper */ }
 window.vgAdminOpen=async function(){if(sessionStorage.getItem('vg_admin_ok')!=='1'){if(prompt('PIN de administrador')!==PIN){alert('PIN incorrecto');return}sessionStorage.setItem('vg_admin_ok','1')}$('#vgAdminModal')?.classList.add('active');vgAdminLoadConfig();await vgAdminLoadAll()};
 window.vgAdminClose=()=>$('#vgAdminModal')?.classList.remove('active');
 window.vgAdminSaveSupabase=function(){write(CFG,{url:$('#vgSupabaseUrl')?.value.trim()||'',anon:$('#vgSupabaseAnon')?.value.trim()||''});initSB();alert('Conexión guardada')};
@@ -6781,811 +6784,221 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 
 
-<script id="vg-admin-order-upgrades-v47">
-(function(){
-'use strict';
-const ADMIN_SESSION_KEY='vg_admin_email_session_v1';
-const ADMIN_EMAIL=(window.VG_ADMIN_EMAIL||'admin@vesselgames.com').toLowerCase();
-const ADMIN_PASSWORD=window.VG_ADMIN_PASSWORD||'Vessel2026!';
-function $(s){return document.querySelector(s)} function $$(s){return Array.from(document.querySelectorAll(s))}
-function money(n){return '$'+Number(n||0).toLocaleString('es-MX',{maximumFractionDigits:0})+' MXN'}
-function sb(){if(!window.supabase)return null;const u=(window.VG_SUPABASE_URL||'https://qlczzaajxvvkyuqqdjmu.supabase.co').trim(),a=(window.VG_SUPABASE_ANON_KEY||'').trim();if(!u||!a||a.includes('PEGA_AQUI'))return null;return window.supabase.createClient(u,a)}
-function logged(){return sessionStorage.getItem(ADMIN_SESSION_KEY)==='1'}
-function loginMarkup(){return `<div class="vg-admin-login-card"><h3>Acceso administrador</h3><p>Ingresa correo y contraseña.</p><input class="vg-admin-input" id="vgAdminEmail" type="email" placeholder="Correo administrador"><input class="vg-admin-input" id="vgAdminPassword" type="password" placeholder="Contraseña"><button class="vg-admin-btn primary" onclick="vgAdminLogin()">Entrar</button></div>`}
-window.vgAdminLogin=function(){const e=($('#vgAdminEmail')?.value||'').trim().toLowerCase(),p=$('#vgAdminPassword')?.value||'';if(e===ADMIN_EMAIL&&p===ADMIN_PASSWORD){sessionStorage.setItem(ADMIN_SESSION_KEY,'1');location.reload()}else alert('Correo o contraseña incorrectos.')}
-window.vgAdminLogout=function(){sessionStorage.removeItem(ADMIN_SESSION_KEY);location.reload()}
-function guard(){const c=$('.vg-admin-content');if(!c)return true;if(!logged()){$$('.vg-admin-tabs button').forEach(b=>b.style.display='none');c.innerHTML=loginMarkup();return false}if(!$('#vgAdminLogoutBtn')){const h=$('.vg-admin-head > div');if(h){const b=document.createElement('button');b.id='vgAdminLogoutBtn';b.className='vg-admin-btn danger';b.textContent='Cerrar sesión';b.onclick=vgAdminLogout;h.appendChild(b)}}return true}
-window.vgAdminOpen=function(){const m=$('#vgAdminModal');if(m)m.classList.add('active');if(!guard())return;if(window.vgAdminLoadOrders)window.vgAdminLoadOrders()}
-let lastY=window.scrollY||0;window.addEventListener('scroll',()=>{const b=$('#vgAdminCornerBtn')||$('.vg-admin-corner-btn');if(!b)return;const y=window.scrollY||0;if(y>lastY+8&&y>80)b.classList.add('vg-admin-hidden');if(y<lastY-8)b.classList.remove('vg-admin-hidden');lastY=y},{passive:true});
-function oid(o){return '#'+String(o?.id||'').replace(/^#/,'')}
-function itemLabel(items){if(!Array.isArray(items)||!items.length)return '';return items.map(i=>{const pr=Number(i.price||0)?' · '+money(i.price):'';return `${i.title||i.product_name||'Producto'}<br><small>${i.option||''}${pr}</small>`}).join('<hr style="border-color:rgba(255,255,255,.08)">')}
-function cartData(){let items=[],total=0;try{if(Array.isArray(window.cart)&&window.cart.length)items=window.cart.map(x=>({title:x.title||x.name||x.product_name||'Producto',option:x.option||x.variant||'',price:Number(x.price||0)}))}catch(e){}if(!items.length){const t=$('#modalTitle,.modal-body h2')?.textContent?.trim(),sel=$('.option.active,.option.selected,[aria-selected="true"]')?.textContent?.trim(),m=(sel||document.body.innerText||'').match(/\$ ?([\d,]+(?:\.\d+)?)/),p=m?Number(m[1].replace(/,/g,'')):0;if(t)items=[{title:t,option:sel||'Consulta directa',price:p}]}const mt=(document.body.innerText||'').match(/Monto total a depositar:\s*\$?\s*([\d,]+(?:\.\d+)?)/i);if(mt)total=Number(mt[1].replace(/,/g,''));if(!total)total=items.reduce((s,x)=>s+Number(x.price||0),0);const rc=$('#retroCount'),rt=$('#retroTotal');if((!items.length||total===0)&&rc&&rt){const c=Number(String(rc.textContent||'0').replace(/[^\d]/g,''))||0,tv=Number(String(rt.textContent||'0').replace(/[^\d.]/g,''))||0;if(c>0){items=[{title:'Colección Xbox Retro',option:c+' juego(s)',price:tv}];total=tv}}if(!items.length)items=[{title:'Pedido por WhatsApp',option:'Consulta directa',price:total||0}];return{items,total}}
-async function uploadProof(client,id){const input=$('#proofInput');if(!input||!input.files||!input.files[0])return null;const f=input.files[0],ext=(f.name.split('.').pop()||'jpg').toLowerCase(),path=`${id}/${Date.now()}.${ext}`;const up=await client.storage.from('comprobantes').upload(path,f,{upsert:true,contentType:f.type||'image/jpeg'});if(up.error)return null;const pub=client.storage.from('comprobantes').getPublicUrl(path),proof={filename:f.name,path,url:pub.data.publicUrl,size:f.size,type:f.type};await client.from('orders').update({proof,proof_url:proof.url}).eq('id',id);return proof}
-window.vgCreateSupabaseOrder=async function(source){const client=sb();if(!client){alert('Supabase no está configurado o no cargó.');return null}const d=cartData(),first=d.items[0]||{},payload={source:source||'whatsapp-click',status:'pendiente',total:d.total,items:d.items,proof:null,client_name:'Cliente WhatsApp',client_phone:'',client_email:'',customer_name:'Cliente WhatsApp',customer_phone:'',customer_email:'',product_name:first.title||'Pedido',product_option:first.option||'',payment_method:'',proof_url:'',notes:'Pedido registrado desde la web'};let r=await client.from('orders').insert(payload).select().single();if(r.error){console.error('[Vessel] insert completo falló:',r.error);r=await client.from('orders').insert({source:payload.source,status:payload.status,total:payload.total,items:payload.items,product_name:payload.product_name,customer_email:'',customer_name:'Cliente WhatsApp'}).select().single()}if(r.error){alert('Supabase no guardó el pedido: '+r.error.message);return null}const proof=await uploadProof(client,r.data.id);return{...r.data,proof:proof||r.data.proof}}
-function addPedidoToUrl(url,order){let final=String(url||''),id=oid(order);const enc=encodeURIComponent(`\n\n*Pedido ${id}*`);if(final.includes('text='))final=final.replace(/text=([^&]*)/,(_,m)=>'text='+m+enc);else final+=(final.includes('?')?'&':'?')+'text='+enc;return final}
-/* v49: disabled v47 click/window.open order interception to prevent duplicate orders */
-window.vgShowProof=function(id){const o=(window.adminOrders||[]).find(x=>String(x.id)===String(id)),p=$('#vgOrderPreview');if(!p||!o)return;$$('.vg-admin-table tr').forEach(tr=>tr.classList.remove('vg-selected-order'));document.querySelector(`[data-order-row="${id}"]`)?.classList.add('vg-selected-order');const u=o.proof?.url||o.proof_url||'';p.innerHTML=`<h3>Pedido ${oid(o)}</h3><p><b>Total:</b> ${money(o.total)}<br><b>Estado:</b> ${o.status||'pendiente'}<br><b>Fuente:</b> ${o.source||''}</p><p><b>Artículos:</b><br>${itemLabel(o.items||[])}</p>${u?`<a class="vg-admin-btn primary" href="${u}" target="_blank">Abrir comprobante</a><br><br><img class="vg-proof-preview-img" src="${u}" onerror="this.style.display='none'">`:'<p>No hay comprobante.</p>'}<br><button class="vg-admin-btn" onclick="navigator.clipboard.writeText('Pedido ${oid(o)}')">Copiar número</button>`}
-window.vgAdminRenderOrders=function(msg){if(!logged()){guard();return}const b=$('#vgAdminOrdersList');if(!b)return;const orders=window.adminOrders||[];if(msg){b.innerHTML=`<div class="vg-admin-note">${msg}</div>`;return}const q=($('#vgOrderSearch')?.value||'').toLowerCase(),f=$('#vgOrderFilter')?.value||'all',list=orders.filter(o=>(f==='all'||o.status===f)&&(!q||JSON.stringify(o).toLowerCase().includes(q)));if(!list.length){b.innerHTML='<div class="vg-admin-note">Sin compras registradas.</div>';return}b.innerHTML=`<table class="vg-admin-table"><thead><tr><th>Pedido</th><th>Artículos</th><th>Total</th><th>Comprobante</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>${list.map(o=>{const u=o.proof?.url||o.proof_url||'';return `<tr data-order-row="${o.id}"><td><span class="vg-order-id">Pedido ${oid(o)}</span><br><small>${new Date(o.created_at).toLocaleString('es-MX')}</small><br>${o.source||''}</td><td>${itemLabel(o.items||[])}</td><td><b>${money(o.total)}</b></td><td>${u?`<button class="vg-admin-mini-btn" onclick="vgShowProof('${o.id}')">Ver imagen</button><br><small>${o.proof?.filename||''}</small>`:'Sin comprobante'}</td><td><select class="vg-admin-select" onchange="vgAdminUpdateOrder('${o.id}',this.value)">${['pendiente','validado','entregado','cancelado'].map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}</select></td><td><button class="vg-admin-mini-btn" onclick="vgShowProof('${o.id}')">Detalle</button><button class="vg-admin-mini-btn" onclick="navigator.clipboard.writeText('Pedido ${oid(o)}')">Copiar ID</button></td></tr>`}).join('')}</tbody></table>`}
-window.vgAdminLoadOrders=async function(){if(!logged()){guard();return}const client=sb();if(!client){vgAdminRenderOrders('Supabase no configurado.');return}const{data,error}=await client.from('orders').select('*').order('created_at',{ascending:false}).limit(500);if(error){vgAdminRenderOrders(error.message);return}window.adminOrders=data||[];const total=adminOrders.reduce((s,o)=>s+Number(o.total||0),0),pending=adminOrders.filter(o=>o.status==='pendiente').length,proofs=adminOrders.filter(o=>o.proof?.url||o.proof_url).length,stats=$('#vgAdminStats');if(stats)stats.innerHTML=`<div class="vg-admin-stat"><b>${adminOrders.length}</b><span>Compras</span></div><div class="vg-admin-stat"><b>${money(total)}</b><span>Total</span></div><div class="vg-admin-stat"><b>${pending}</b><span>Pendientes</span></div><div class="vg-admin-stat"><b>${proofs}</b><span>Comprobantes</span></div>`;vgAdminRenderOrders()}
-window.vgLoadQuickSettings=async function(){const client=sb();if(!client)return alert('Supabase no configurado.');const{data,error}=await client.from('site_settings').select('*').limit(1);if(error)return alert('Falta crear tabla site_settings. Ejecuta SQL v47.');const r=data?.[0]||{};if($('#vgSettingWhatsapp'))$('#vgSettingWhatsapp').value=r.whatsapp||'';if($('#vgSettingDelivery'))$('#vgSettingDelivery').value=r.delivery||'';if($('#vgSettingRate'))$('#vgSettingRate').value=r.exchange_rate||'';if($('#vgSettingNotice'))$('#vgSettingNotice').value=r.notice||''}
-window.vgSaveQuickSettings=async function(){const client=sb();if(!client)return alert('Supabase no configurado.');const payload={id:'main',whatsapp:$('#vgSettingWhatsapp')?.value||'',delivery:$('#vgSettingDelivery')?.value||'',exchange_rate:Number($('#vgSettingRate')?.value||17),notice:$('#vgSettingNotice')?.value||'',updated_at:new Date().toISOString()};const{error}=await client.from('site_settings').upsert(payload,{onConflict:'id'});if(error)alert('Error guardando ajustes: '+error.message);else alert('Ajustes guardados.')}
-document.addEventListener('DOMContentLoaded',guard);setTimeout(guard,500);
-})();
-</script>
 
 
-<style id="vg-hotfix-v48">
-  .category-nav{position:relative!important;padding-right:132px!important;overflow:visible!important}
-  .category-row{padding-right:132px!important}
-  #vgAdminCornerBtn,.vg-admin-corner-btn{
-    position:absolute!important;
-    top:10px!important;
-    right:18px!important;
-    left:auto!important;
-    bottom:auto!important;
-    height:38px!important;
-    min-width:96px!important;
-    padding:0 14px!important;
-    border-radius:14px!important;
-    font-size:.76rem!important;
-    font-weight:900!important;
-    letter-spacing:.04em!important;
-    background:linear-gradient(135deg,rgba(16,24,38,.92),rgba(10,38,41,.92))!important;
-    border:1px solid rgba(25,230,193,.28)!important;
-    box-shadow:0 10px 26px rgba(0,0,0,.28)!important;
-    backdrop-filter:blur(12px)!important;
-    transition:opacity .28s ease,transform .28s ease,filter .28s ease!important;
-    z-index:160!important;
-  }
-  #vgAdminCornerBtn:hover,.vg-admin-corner-btn:hover{transform:translateY(-1px)!important;filter:brightness(1.05)}
-  #vgAdminCornerBtn.vg-admin-hidden,.vg-admin-corner-btn.vg-admin-hidden{opacity:0!important;transform:translateY(-10px)!important;pointer-events:none!important}
-  .vg-admin-panel{width:min(1460px,calc(100vw - 18px))!important;height:min(95vh,980px)!important}
-  .vg-admin-content{padding:22px!important}
-  .vg-order-layout{grid-template-columns:minmax(0,1.6fr) minmax(420px,.8fr)!important}
-  .vg-order-preview{min-height:420px!important}
-  .vg-proof-preview-img{max-height:620px!important}
-  .vg-admin-table td{font-size:.86rem!important}
-  .vg-admin-mini-btn{white-space:nowrap}
-  @media(max-width:980px){
-    .category-nav{padding-right:0!important;overflow-x:auto!important}
-    .category-row{padding-right:0!important}
-    #vgAdminCornerBtn,.vg-admin-corner-btn{position:fixed!important;top:auto!important;right:14px!important;bottom:84px!important;height:42px!important;min-width:104px!important;border-radius:999px!important}
-    .vg-order-layout{grid-template-columns:1fr!important}
-  }
-</style>
-<script id="vg-hotfix-v48">
-(function(){
-  const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
-  function moneyVal(v){ const n=Number(v||0); return isFinite(n)?n:0; }
-  function parseMoneyAny(v){
-    if(v==null) return 0;
-    if(typeof v==='number') return v;
-    const txt=String(v).replace(/MXN|USD|\$/gi,' ').replace(/,/g,'');
-    const m=txt.match(/-?\d+(?:\.\d+)?/);
-    return m?Number(m[0]):0;
-  }
-  function deriveTotal(o){
-    let total=moneyVal(o&&o.total);
-    if(total>0) return total;
-    if(Array.isArray(o?.items) && o.items.length){
-      total=o.items.reduce((s,it)=>s+parseMoneyAny(it?.price),0);
-      if(total>0) return total;
-    }
-    total=parseMoneyAny(o?.price_label||o?.subtotal||o?.amount);
-    if(total>0) return total;
-    if(typeof o?.product_option==='string'){
-      total=parseMoneyAny(o.product_option);
-      if(total>0) return total;
-    }
-    return 0;
-  }
-  function normalizeItems(items,o){
-    if(Array.isArray(items) && items.length){
-      return items.map(it=>({
-        title: it?.title||it?.name||o?.product_name||'Producto',
-        option: it?.option||it?.variant||o?.product_option||'',
-        price: parseMoneyAny(it?.price)
-      }));
-    }
-    return [{title:o?.product_name||'Pedido', option:o?.product_option||'Consulta directa', price:deriveTotal(o)}];
-  }
-  function itemLabelBetter(o){
-    const items=normalizeItems(o?.items,o);
-    const totalItems=items.length;
-    const first=items[0]||{};
-    const title=first.title||'Pedido';
-    const extra=totalItems>1?`<br><small>${totalItems} artículo(s)</small>`:(first.option?`<br><small>${first.option}</small>`:'');
-    return `${title}${extra}`;
-  }
-  function orderNum(o){ return '#'+String(o?.id||'').replace(/^#/,''); }
-  function orderSort(a,b){
-    const ta=new Date(a?.created_at||0).getTime()||0;
-    const tb=new Date(b?.created_at||0).getTime()||0;
-    if(tb!==ta) return tb-ta;
-    return Number(b?.id||0)-Number(a?.id||0);
-  }
-  function shouldHideOrder(o){
-    const src=String(o?.source||'').toLowerCase();
-    const total=deriveTotal(o);
-    const hiddenSources=['window-open','button-click','checkout-comprobante','whatsapp-link'];
-    if(hiddenSources.includes(src) && total<=0 && !(o?.proof?.url||o?.proof_url)) return true;
-    return false;
-  }
-  function moveAdminButton(){
-    const btn=$('#vgAdminCornerBtn')||$('.vg-admin-corner-btn');
-    const nav=$('.category-nav');
-    if(btn&&nav&&btn.parentElement!==nav) nav.appendChild(btn);
-  }
-  let lastY=window.scrollY||0;
-  function adminScrollFx(){
-    const btn=$('#vgAdminCornerBtn')||$('.vg-admin-corner-btn'); if(!btn) return;
-    const y=window.scrollY||0;
-    if(y>lastY+10 && y>90) btn.classList.add('vg-admin-hidden');
-    else if(y<lastY-10 || y<70) btn.classList.remove('vg-admin-hidden');
-    lastY=y;
-  }
-  window.addEventListener('scroll', adminScrollFx, {passive:true});
-  document.addEventListener('DOMContentLoaded', ()=>{moveAdminButton(); adminScrollFx();});
-  setTimeout(moveAdminButton, 250);
-  setTimeout(moveAdminButton, 1200);
-
-  // More reliable cart data / order creation
-  window.cartData=function(){
-    let items=[], total=0;
-    try{
-      if(window.pendingPaymentOrder && Array.isArray(window.pendingPaymentOrder.items) && window.pendingPaymentOrder.items.length){
-        items=window.pendingPaymentOrder.items.map(x=>({title:x.title||x.name||'Producto',option:x.option||x.variant||'',price:parseMoneyAny(x.price)}));
-        total=parseMoneyAny(window.pendingPaymentOrder.total);
-      }
-    }catch(e){}
-    if(!items.length){
-      try{
-        if(Array.isArray(window.cart)&&window.cart.length){
-          items=window.cart.map(x=>({title:x.title||x.name||x.product_name||'Producto',option:x.option||x.variant||'',price:parseMoneyAny(x.price)}));
-        }
-      }catch(e){}
-    }
-    if(!items.length){
-      const t=$('#modalTitle,.modal-body h2')?.textContent?.trim();
-      const sel=$('.option.active,.option.selected,[aria-selected="true"]')?.textContent?.trim();
-      const p=parseMoneyAny(sel||$('#payModalTotal')?.textContent||document.body.innerText||'');
-      if(t) items=[{title:t,option:sel||'Consulta directa',price:p}];
-    }
-    if(!total) total=parseMoneyAny($('#payModalTotal')?.textContent||'');
-    if(!total) total=items.reduce((s,x)=>s+parseMoneyAny(x.price),0);
-    const rc=$('#retroCount'), rt=$('#retroTotal');
-    if((!items.length || total===0) && rc && rt){
-      const c=parseMoneyAny(rc.textContent), tv=parseMoneyAny(rt.textContent);
-      if(c>0){ items=[{title:'Colección Xbox Retro', option:c+' juego(s)', price:tv}]; total=tv; }
-    }
-    if(!items.length) items=[{title:'Pedido por WhatsApp', option:'Consulta directa', price:total||0}];
-    if(!total) total=items.reduce((s,x)=>s+parseMoneyAny(x.price),0);
-    return {items,total};
-  };
-
-  window.vgCreateSupabaseOrder = async function(source){
-    const client = (typeof window.sb==='function'?window.sb():null);
-    if(!client){ alert('Supabase no está configurado o no cargó.'); return null; }
-    const d=window.cartData();
-    const first=d.items[0]||{};
-    const dedupeKey=JSON.stringify({src:source||'whatsapp-checkout',items:d.items,total:d.total});
-    const lastTry=window.__vgLastOrderTry||{};
-    if(lastTry.key===dedupeKey && Date.now()-lastTry.time<4000){ return lastTry.order||null; }
-    window.__vgLastOrderTry={key:dedupeKey,time:Date.now(),order:null};
-    const payload={
-      source:source||'whatsapp-checkout',
-      status:'pendiente',
-      total:d.total,
-      items:d.items,
-      proof:null,
-      client_name:'Cliente WhatsApp', client_phone:'', client_email:'',
-      customer_name:'Cliente WhatsApp', customer_phone:'', customer_email:'',
-      product_name:first.title||'Pedido',
-      product_option:first.option||'',
-      payment_method:'', proof_url:'',
-      notes:'Pedido registrado desde la web'
-    };
-    let r=await client.from('orders').insert(payload).select().single();
-    if(r.error){
-      console.error('[Vessel] insert completo falló:',r.error);
-      r=await client.from('orders').insert({
-        source:payload.source,status:payload.status,total:payload.total,items:payload.items,
-        product_name:payload.product_name,product_option:payload.product_option,
-        customer_email:'',customer_name:'Cliente WhatsApp'
-      }).select().single();
-    }
-    if(r.error){ alert('Supabase no guardó el pedido: '+r.error.message); return null; }
-    let proof=null;
-    try{ if(typeof window.uploadProof==='function') proof=await window.uploadProof(client,r.data.id); }catch(e){ console.warn(e); }
-    const out={...r.data,proof:proof||r.data.proof};
-    window.__vgLastOrderTry.order=out;
-    return out;
-  };
-
-  window.sendPaymentWhatsApp = async function(){
-    const d=window.cartData();
-    const order=await window.vgCreateSupabaseOrder('whatsapp-checkout');
-    if(!order) return;
-    const items=(d.items||[]).map((it,i)=>`${i+1}. ${it.title} - ${it.option||'Opción'} - $${parseMoneyAny(it.price)} MXN`).join('
-');
-    const total=`$${parseMoneyAny(d.total)} MXN`;
-    const text=`Hola, envío mi comprobante de pago.
-
-Pedido ${orderNum(order)}
-
-${items}
-
-Total: ${total}
-
-Adjunto comprobante en este chat.`;
-    const href=`https://wa.me/${window.WHATSAPP_NUMBER||''}?text=${encodeURIComponent(text)}`;
-    const a=document.createElement('a'); a.href=href; a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); a.remove();
-  };
-
-  // Override admin panel rendering/loading
-  window.vgShowProof=function(id){
-    const orders=(window.adminOrders||[]);
-    const o=orders.find(x=>String(x.id)===String(id));
-    const p=$('#vgOrderPreview');
-    if(!p||!o) return;
-    $$('.vg-admin-table tr').forEach(tr=>tr.classList.remove('vg-selected-order'));
-    document.querySelector(`[data-order-row="${id}"]`)?.classList.add('vg-selected-order');
-    const u=o.proof?.url||o.proof_url||'';
-    const total=deriveTotal(o);
-    p.innerHTML=`<h3>Pedido ${orderNum(o)}</h3>
-      <p><b>Total:</b> $${total} MXN<br><b>Estado:</b> ${o.status||'pendiente'}<br><b>Fuente:</b> ${o.source||''}<br><b>Fecha:</b> ${new Date(o.created_at).toLocaleString('es-MX')}</p>
-      <p><b>Artículos:</b><br>${itemLabelBetter(o)}</p>
-      ${u?`<a class="vg-admin-btn primary" href="${u}" target="_blank">Abrir comprobante</a><br><br><img class="vg-proof-preview-img" src="${u}" onerror="this.style.display='none'">`:'<p>No hay comprobante.</p>'}
-      <br><button class="vg-admin-btn" onclick="navigator.clipboard.writeText('Pedido ${orderNum(o)}')">Copiar número</button>`;
-  };
-
-  window.vgAdminRenderOrders=function(msg){
-    if(typeof window.logged==='function' && !window.logged()){ if(typeof window.guard==='function') window.guard(); return; }
-    const b=$('#vgAdminOrdersList'); if(!b) return;
-    let orders=(window.adminOrders||[]).slice().sort(orderSort).filter(o=>!shouldHideOrder(o));
-    if(msg){ b.innerHTML=`<div class="vg-admin-note">${msg}</div>`; return; }
-    const q=($('#vgOrderSearch')?.value||'').toLowerCase();
-    const f=$('#vgOrderFilter')?.value||'all';
-    orders=orders.filter(o=>(f==='all'||o.status===f) && (!q || JSON.stringify(o).toLowerCase().includes(q) || String(o.id).includes(q)));
-    if(!orders.length){ b.innerHTML='<div class="vg-admin-note">Sin compras registradas.</div>'; return; }
-    b.innerHTML=`<div class="vg-order-layout"><div><table class="vg-admin-table"><thead><tr><th>Pedido</th><th>Artículos</th><th>Total</th><th>Comprobante</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>${orders.map(o=>{const u=o.proof?.url||o.proof_url||'';const total=deriveTotal(o);const fname=(o.proof?.filename||u.split('/').pop()||'');return `<tr data-order-row="${o.id}"><td><span class="vg-order-id">Pedido ${orderNum(o)}</span><br><small>${new Date(o.created_at).toLocaleString('es-MX')}</small><br>${o.source||''}</td><td>${itemLabelBetter(o)}</td><td><b>$${total} MXN</b></td><td>${u?`<button class="vg-admin-mini-btn" onclick="vgShowProof('${o.id}')">Ver imagen</button><br><small>${fname}</small>`:'Sin comprobante'}</td><td><select class="vg-admin-select" onchange="vgAdminUpdateOrder('${o.id}',this.value)">${['pendiente','validado','entregado','cancelado'].map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}</select></td><td><button class="vg-admin-mini-btn" onclick="vgShowProof('${o.id}')">Detalle</button><button class="vg-admin-mini-btn" onclick="navigator.clipboard.writeText('Pedido ${orderNum(o)}')">Copiar ID</button></td></tr>`}).join('')}</tbody></table></div><aside class="vg-order-preview" id="vgOrderPreview"><h3>Selecciona un pedido</h3><p>Aquí podrás ver el comprobante, el total real y los datos del pedido.</p></aside></div>`;
-  };
-
-  window.vgAdminLoadOrders=async function(){
-    if(typeof window.logged==='function' && !window.logged()){ if(typeof window.guard==='function') window.guard(); return; }
-    const client=(typeof window.sb==='function'?window.sb():null); if(!client){ window.vgAdminRenderOrders('Supabase no configurado.'); return; }
-    const {data,error}=await client.from('orders').select('*').order('created_at',{ascending:false}).limit(500);
-    if(error){ window.vgAdminRenderOrders(error.message); return; }
-    const cleaned=(data||[]).map(o=>({...o,total:deriveTotal(o)})).sort(orderSort);
-    window.adminOrders=cleaned;
-    const visible=cleaned.filter(o=>!shouldHideOrder(o));
-    const total=visible.reduce((s,o)=>s+deriveTotal(o),0);
-    const pending=visible.filter(o=>String(o.status||'').toLowerCase()==='pendiente').length;
-    const proofs=visible.filter(o=>o.proof?.url||o.proof_url).length;
-    const stats=$('#vgAdminStats');
-    if(stats) stats.innerHTML=`<div class="vg-admin-stat"><b>${visible.length}</b><span>Compras</span></div><div class="vg-admin-stat"><b>$${total} MXN</b><span>Total</span></div><div class="vg-admin-stat"><b>${pending}</b><span>Pendientes</span></div><div class="vg-admin-stat"><b>${proofs}</b><span>Comprobantes</span></div>`;
-    window.vgAdminRenderOrders();
-  };
-
-  window.vgSaveQuickSettings=async function(){
-    const client=(typeof window.sb==='function'?window.sb():null); if(!client) return alert('Supabase no configurado.');
-    const payload={setting_key:'main',whatsapp:$('#vgSettingWhatsapp')?.value||'',delivery:$('#vgSettingDelivery')?.value||'',exchange_rate:Number($('#vgSettingRate')?.value||17),notice:$('#vgSettingNotice')?.value||'',updated_at:new Date().toISOString()};
-    const {error}=await client.from('site_settings').upsert(payload,{onConflict:'setting_key'});
-    if(error) alert('Error guardando ajustes: '+error.message); else alert('Ajustes guardados.');
-  };
-})();
-</script>
-
-
-<style id="vg-hotfix-v49">
-  .category-nav{position:relative!important;padding-right:126px!important;overflow:visible!important}
-  .category-row{padding-right:126px!important}
-  #vgAdminCornerBtn,.vg-admin-corner-btn{
-    position:absolute!important;top:10px!important;right:18px!important;left:auto!important;bottom:auto!important;
-    height:38px!important;min-width:96px!important;padding:0 14px!important;border-radius:14px!important;
-    font-size:.76rem!important;font-weight:900!important;letter-spacing:.04em!important;
-    background:linear-gradient(135deg,rgba(16,24,38,.92),rgba(10,38,41,.92))!important;
-    border:1px solid rgba(25,230,193,.28)!important;box-shadow:0 10px 26px rgba(0,0,0,.28)!important;
-    backdrop-filter:blur(12px)!important;transition:opacity .28s ease,transform .28s ease,filter .28s ease!important;z-index:160!important
-  }
-  #vgAdminCornerBtn.vg-admin-hidden,.vg-admin-corner-btn.vg-admin-hidden{opacity:0!important;transform:translateY(-10px)!important;pointer-events:none!important}
-  #vgAdminCornerBtn:hover,.vg-admin-corner-btn:hover{transform:translateY(-1px)!important;filter:brightness(1.05)}
-  .vg-admin-panel{width:min(1460px,calc(100vw - 18px))!important;height:min(95vh,980px)!important}
-  .vg-order-layout{grid-template-columns:minmax(0,1.6fr) minmax(420px,.8fr)!important}
-  .vg-proof-preview-img{max-height:620px!important}
-  @media(max-width:980px){
-    .category-nav{padding-right:0!important;overflow-x:auto!important}
-    .category-row{padding-right:0!important}
-    #vgAdminCornerBtn,.vg-admin-corner-btn{position:fixed!important;top:auto!important;right:14px!important;bottom:84px!important;height:42px!important;min-width:104px!important;border-radius:999px!important}
-    .vg-order-layout{grid-template-columns:1fr!important}
-  }
-</style>
-
-<script id="vg-duplicate-fix-v49">
-(function(){
-'use strict';
-const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
-function parseMoneyAny(v){
-  if(v==null) return 0;
-  if(typeof v==='number') return v;
-  const txt=String(v).replace(/MXN|USD|\$/gi,' ').replace(/,/g,'');
-  const nums=[...txt.matchAll(/-?\d+(?:\.\d+)?/g)].map(m=>Number(m[0])).filter(n=>isFinite(n));
-  return nums.length?nums[nums.length-1]:0;
-}
-function deriveTotal(o){
-  let total=parseMoneyAny(o&&o.total);
-  if(total>0) return total;
-  if(Array.isArray(o?.items) && o.items.length){
-    total=o.items.reduce((s,it)=>s+parseMoneyAny(it?.price),0);
-    if(total>0) return total;
-  }
-  return parseMoneyAny(o?.product_option||o?.price_label||o?.amount||0);
-}
-function normalizeItems(items,o){
-  if(Array.isArray(items)&&items.length){
-    return items.map(it=>({title:it?.title||it?.name||o?.product_name||'Producto', option:it?.option||it?.variant||o?.product_option||'', price:parseMoneyAny(it?.price)}));
-  }
-  return [{title:o?.product_name||'Pedido', option:o?.product_option||'Consulta directa', price:deriveTotal(o)}];
-}
-function itemLabel(o){
-  const items=normalizeItems(o?.items,o), first=items[0]||{};
-  return `${first.title||'Pedido'}${first.option?`<br><small>${first.option}</small>`:''}${items.length>1?`<br><small>${items.length} artículo(s)</small>`:''}`;
-}
-function orderNum(o){return '#'+String(o?.id||'').replace(/^#/,'')}
-function orderSort(a,b){
-  const ta=new Date(a?.created_at||0).getTime()||0, tb=new Date(b?.created_at||0).getTime()||0;
-  if(tb!==ta) return tb-ta;
-  return Number(b?.id||0)-Number(a?.id||0);
-}
-function isInternalDuplicate(o){
-  const src=String(o?.source||'').toLowerCase();
-  const total=deriveTotal(o);
-  // Hide duplicate technical rows from older versions; keep the real WhatsApp checkout row.
-  if(['window-open','button-click','checkout-comprobante','whatsapp-link'].includes(src) && total<=0) return true;
-  return false;
-}
-function sb(){
-  if(!window.supabase) return null;
-  const u=(window.VG_SUPABASE_URL||'https://qlczzaajxvvkyuqqdjmu.supabase.co').trim();
-  const a=(window.VG_SUPABASE_ANON_KEY||'').trim();
-  if(!u||!a||a.includes('PEGA_AQUI')) return null;
-  return window.supabase.createClient(u,a);
-}
-function moveAdminButton(){
-  const btn=$('#vgAdminCornerBtn')||$('.vg-admin-corner-btn'), nav=$('.category-nav');
-  if(btn&&nav&&btn.parentElement!==nav) nav.appendChild(btn);
-}
-let lastY=window.scrollY||0;
-window.addEventListener('scroll',()=>{
-  const btn=$('#vgAdminCornerBtn')||$('.vg-admin-corner-btn'); if(!btn) return;
-  const y=window.scrollY||0;
-  if(y>lastY+10 && y>90) btn.classList.add('vg-admin-hidden');
-  else if(y<lastY-10 || y<70) btn.classList.remove('vg-admin-hidden');
-  lastY=y;
-},{passive:true});
-document.addEventListener('DOMContentLoaded',moveAdminButton);
-setTimeout(moveAdminButton,250); setTimeout(moveAdminButton,1200);
-
-window.cartData=function(){
-  let items=[], total=0;
-  try{
-    if(window.pendingPaymentOrder && Array.isArray(window.pendingPaymentOrder.items) && window.pendingPaymentOrder.items.length){
-      items=window.pendingPaymentOrder.items.map(x=>({title:x.title||x.name||'Producto',option:x.option||x.variant||'',price:parseMoneyAny(x.price)}));
-      total=parseMoneyAny(window.pendingPaymentOrder.total);
-    }
-  }catch(e){}
-  if(!items.length){
-    try{ if(Array.isArray(window.cart)&&window.cart.length) items=window.cart.map(x=>({title:x.title||x.name||x.product_name||'Producto',option:x.option||x.variant||'',price:parseMoneyAny(x.price)})); }catch(e){}
-  }
-  if(!items.length){
-    const t=$('#modalTitle,.modal-body h2')?.textContent?.trim();
-    const sel=$('.option.active,.option.selected,[aria-selected="true"]')?.textContent?.trim();
-    const p=parseMoneyAny(sel||$('#payModalTotal')?.textContent||'');
-    if(t) items=[{title:t,option:sel||'Consulta directa',price:p}];
-  }
-  if(!total) total=parseMoneyAny($('#payModalTotal')?.textContent||'');
-  if(!total) total=items.reduce((s,x)=>s+parseMoneyAny(x.price),0);
-  if(!items.length) items=[{title:'Pedido por WhatsApp',option:'Consulta directa',price:total||0}];
-  return {items,total};
-};
-
-async function uploadProof(client,id){
-  const input=$('#proofInput');
-  if(!input || !input.files || !input.files[0]) return null;
-  const f=input.files[0], ext=(f.name.split('.').pop()||'jpg').toLowerCase(), path=`${id}/${Date.now()}.${ext}`;
-  const up=await client.storage.from('comprobantes').upload(path,f,{upsert:true,contentType:f.type||'image/jpeg'});
-  if(up.error) return null;
-  const pub=client.storage.from('comprobantes').getPublicUrl(path);
-  const proof={filename:f.name,path,url:pub.data.publicUrl,size:f.size,type:f.type};
-  await client.from('orders').update({proof,proof_url:proof.url}).eq('id',id);
-  return proof;
-}
-
-window.vgCreateSupabaseOrder=async function(source){
-  const client=sb(); if(!client){alert('Supabase no está configurado o no cargó.'); return null;}
-  const d=window.cartData(), first=d.items[0]||{};
-  const dedupeKey=JSON.stringify({items:d.items,total:d.total});
-  if(window.__vgSingleOrder && window.__vgSingleOrder.key===dedupeKey && Date.now()-window.__vgSingleOrder.time<15000){
-    return window.__vgSingleOrder.order||null;
-  }
-  window.__vgSingleOrder={key:dedupeKey,time:Date.now(),order:null};
-  const payload={
-    source:source||'whatsapp-checkout',
-    status:'pendiente',
-    total:d.total,
-    items:d.items,
-    proof:null,
-    client_name:'Cliente WhatsApp',client_phone:'',client_email:'',
-    customer_name:'Cliente WhatsApp',customer_phone:'',customer_email:'',
-    product_name:first.title||'Pedido',
-    product_option:first.option||'',
-    payment_method:'',proof_url:'',
-    notes:'Pedido registrado desde la web'
-  };
-  let r=await client.from('orders').insert(payload).select().single();
-  if(r.error){
-    console.error('[Vessel] insert completo falló:',r.error);
-    r=await client.from('orders').insert({
-      source:payload.source,status:payload.status,total:payload.total,items:payload.items,
-      product_name:payload.product_name,product_option:payload.product_option,
-      customer_email:'',customer_name:'Cliente WhatsApp'
-    }).select().single();
-  }
-  if(r.error){alert('Supabase no guardó el pedido: '+r.error.message); window.__vgSingleOrder=null; return null;}
-  const proof=await uploadProof(client,r.data.id);
-  const out={...r.data,proof:proof||r.data.proof};
-  window.__vgSingleOrder.order=out;
-  return out;
-};
-
-window.sendPaymentWhatsApp=async function(){
-  const d=window.cartData();
-  const order=await window.vgCreateSupabaseOrder('whatsapp-checkout');
-  if(!order) return;
-  const lines=(d.items||[]).map((it,i)=>`${i+1}. ${it.title} - ${it.option||'Opción'} - $${parseMoneyAny(it.price)} MXN`).join('\n');
-  const total=`$${parseMoneyAny(d.total)} MXN`;
-  const text=`Hola, envío mi comprobante de pago.\n\nPedido ${orderNum(order)}\n\n${lines}\n\nTotal: ${total}\n\nAdjunto comprobante en este chat.`;
-  const href=`https://wa.me/${window.WHATSAPP_NUMBER||''}?text=${encodeURIComponent(text)}`;
-  const a=document.createElement('a'); a.href=href; a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); a.remove();
-};
-
-window.vgShowProof=function(id){
-  const o=(window.adminOrders||[]).find(x=>String(x.id)===String(id)), p=$('#vgOrderPreview');
-  if(!p||!o) return;
-  $$('.vg-admin-table tr').forEach(tr=>tr.classList.remove('vg-selected-order'));
-  document.querySelector(`[data-order-row="${id}"]`)?.classList.add('vg-selected-order');
-  const u=o.proof?.url||o.proof_url||'', total=deriveTotal(o);
-  p.innerHTML=`<h3>Pedido ${orderNum(o)}</h3>
-  <p><b>Total:</b> $${total} MXN<br><b>Estado:</b> ${o.status||'pendiente'}<br><b>Fuente:</b> ${o.source||''}<br><b>Fecha:</b> ${new Date(o.created_at).toLocaleString('es-MX')}</p>
-  <p><b>Artículos:</b><br>${itemLabel(o)}</p>
-  ${u?`<a class="vg-admin-btn primary" href="${u}" target="_blank">Abrir comprobante</a><br><br><img class="vg-proof-preview-img" src="${u}" onerror="this.style.display='none'">`:'<p>No hay comprobante.</p>'}
-  <br><button class="vg-admin-btn" onclick="navigator.clipboard.writeText('Pedido ${orderNum(o)}')">Copiar número</button>`;
-};
-
-window.vgAdminRenderOrders=function(msg){
-  const b=$('#vgAdminOrdersList'); if(!b) return;
-  let orders=(window.adminOrders||[]).slice().sort(orderSort).filter(o=>!isInternalDuplicate(o));
-  if(msg){b.innerHTML=`<div class="vg-admin-note">${msg}</div>`; return;}
-  const q=($('#vgOrderSearch')?.value||'').toLowerCase(), f=$('#vgOrderFilter')?.value||'all';
-  orders=orders.filter(o=>(f==='all'||o.status===f)&&(!q||JSON.stringify(o).toLowerCase().includes(q)||String(o.id).includes(q)));
-  if(!orders.length){b.innerHTML='<div class="vg-admin-note">Sin compras registradas.</div>'; return;}
-  b.innerHTML=`<div class="vg-order-layout"><div><table class="vg-admin-table"><thead><tr><th>Pedido</th><th>Artículos</th><th>Total</th><th>Comprobante</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>${orders.map(o=>{const u=o.proof?.url||o.proof_url||'', total=deriveTotal(o), fname=(o.proof?.filename||u.split('/').pop()||'');return `<tr data-order-row="${o.id}"><td><span class="vg-order-id">Pedido ${orderNum(o)}</span><br><small>${new Date(o.created_at).toLocaleString('es-MX')}</small><br>${o.source||''}</td><td>${itemLabel(o)}</td><td><b>$${total} MXN</b></td><td>${u?`<button class="vg-admin-mini-btn" onclick="vgShowProof('${o.id}')">Ver imagen</button><br><small>${fname}</small>`:'Sin comprobante'}</td><td><select class="vg-admin-select" onchange="vgAdminUpdateOrder('${o.id}',this.value)">${['pendiente','validado','entregado','cancelado'].map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}</select></td><td><button class="vg-admin-mini-btn" onclick="vgShowProof('${o.id}')">Detalle</button><button class="vg-admin-mini-btn" onclick="navigator.clipboard.writeText('Pedido ${orderNum(o)}')">Copiar ID</button></td></tr>`}).join('')}</tbody></table></div><aside class="vg-order-preview" id="vgOrderPreview"><h3>Selecciona un pedido</h3><p>Aquí podrás ver el comprobante, el total real y los datos del pedido.</p></aside></div>`;
-};
-
-window.vgAdminLoadOrders=async function(){
-  const client=sb(); if(!client){window.vgAdminRenderOrders('Supabase no configurado.'); return;}
-  const {data,error}=await client.from('orders').select('*').order('created_at',{ascending:false}).limit(500);
-  if(error){window.vgAdminRenderOrders(error.message); return;}
-  const cleaned=(data||[]).map(o=>({...o,total:deriveTotal(o)})).sort(orderSort);
-  window.adminOrders=cleaned;
-  const visible=cleaned.filter(o=>!isInternalDuplicate(o));
-  const total=visible.reduce((s,o)=>s+deriveTotal(o),0);
-  const pending=visible.filter(o=>String(o.status||'').toLowerCase()==='pendiente').length;
-  const proofs=visible.filter(o=>o.proof?.url||o.proof_url).length;
-  const stats=$('#vgAdminStats');
-  if(stats) stats.innerHTML=`<div class="vg-admin-stat"><b>${visible.length}</b><span>Compras</span></div><div class="vg-admin-stat"><b>$${total} MXN</b><span>Total</span></div><div class="vg-admin-stat"><b>${pending}</b><span>Pendientes</span></div><div class="vg-admin-stat"><b>${proofs}</b><span>Comprobantes</span></div>`;
-  window.vgAdminRenderOrders();
-};
-})();
-</script>
-
-
-<style id="vg-admin-layout-fix-v50">
-  #vgAdminOrders .vg-order-layout{
-    display:grid!important;
-    grid-template-columns:minmax(0,1.55fr) minmax(340px,.82fr)!important;
-    gap:18px!important;
-    align-items:start!important;
-    margin-top:14px!important;
-  }
-  #vgAdminOrdersList{min-width:0!important;overflow:auto!important;max-height:calc(95vh - 290px)!important;padding-right:4px!important}
-  #vgOrderPreview{min-width:0!important;position:sticky!important;top:8px!important;max-height:calc(95vh - 290px)!important;overflow:auto!important}
-  #vgAdminOrders .vg-admin-table{width:100%!important;table-layout:fixed!important}
-  #vgAdminOrders .vg-admin-table th,
-  #vgAdminOrders .vg-admin-table td{word-wrap:break-word!important;overflow-wrap:anywhere!important}
-  #vgAdminOrders .vg-admin-table th:nth-child(1), #vgAdminOrders .vg-admin-table td:nth-child(1){width:18%}
-  #vgAdminOrders .vg-admin-table th:nth-child(2), #vgAdminOrders .vg-admin-table td:nth-child(2){width:28%}
-  #vgAdminOrders .vg-admin-table th:nth-child(3), #vgAdminOrders .vg-admin-table td:nth-child(3){width:10%}
-  #vgAdminOrders .vg-admin-table th:nth-child(4), #vgAdminOrders .vg-admin-table td:nth-child(4){width:18%}
-  #vgAdminOrders .vg-admin-table th:nth-child(5), #vgAdminOrders .vg-admin-table td:nth-child(5){width:12%}
-  #vgAdminOrders .vg-admin-table th:nth-child(6), #vgAdminOrders .vg-admin-table td:nth-child(6){width:14%}
-  #vgAdminOrders .vg-admin-table td{padding:14px 12px!important;vertical-align:top!important}
-  #vgAdminOrders .vg-admin-table td:last-child{white-space:normal!important}
-  #vgAdminOrders .vg-admin-mini-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:88px!important;margin:3px 4px 0 0!important}
-  #vgAdminOrders .vg-admin-select{min-width:132px!important}
-  #vgOrderPreview .vg-admin-btn{display:inline-flex!important}
-  #vgOrderPreview .vg-proof-preview-img{display:block!important;width:100%!important;max-height:540px!important;object-fit:contain!important;margin-top:10px!important}
-  #vgOrderPreview .vg-order-meta{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;margin:10px 0 14px!important}
-  #vgOrderPreview .vg-order-meta div{background:rgba(255,255,255,.04)!important;border:1px solid rgba(255,255,255,.08)!important;border-radius:14px!important;padding:10px 12px!important}
-  @media (max-width: 1100px){
-    #vgAdminOrders .vg-order-layout{grid-template-columns:1fr!important}
-    #vgAdminOrdersList,#vgOrderPreview{max-height:none!important}
-    #vgOrderPreview{position:relative!important;top:0!important}
-  }
-</style>
-<script id="vg-admin-layout-fix-v50">
-(function(){
-  function $(s,r=document){return r.querySelector(s)}
-  function money(n){n=Number(n||0);return '$'+(isFinite(n)?n:0)+' MXN'}
-  function oid(o){return '#'+String(o?.id||'')}
-  function parseMoney(v){
-    if(v==null) return 0;
-    if(typeof v==='number') return v;
-    const t=String(v).replace(/MXN|USD|\$/gi,' ').replace(/,/g,'');
-    const m=t.match(/-?\d+(?:\.\d+)?/g);
-    return m&&m.length?Number(m[m.length-1]):0;
-  }
-  function itemLabel(order){
-    const items=Array.isArray(order?.items)?order.items:[];
-    if(items.length){
-      return items.map(i=>{
-        const title=i?.title||i?.name||order?.product_name||'Producto';
-        const opt=i?.option||i?.variant||order?.product_option||'';
-        const price=parseMoney(i?.price);
-        return `${title}${opt?`<br><small>${opt}</small>`:''}${price?`<br><small>· $${price} MXN</small>`:''}`;
-      }).join('<hr>');
-    }
-    return `${order?.product_name||'Pedido'}${order?.product_option?`<br><small>${order.product_option}</small>`:''}`;
-  }
-  function deriveTotal(o){
-    let total=parseMoney(o?.total);
-    if(total>0) return total;
-    const items=Array.isArray(o?.items)?o.items:[];
-    total=items.reduce((s,i)=>s+parseMoney(i?.price),0);
-    if(total>0) return total;
-    return parseMoney(o?.price_label||o?.product_option||0);
-  }
-  function filenameOf(o){
-    return o?.proof?.filename || (o?.proof_url ? String(o.proof_url).split('/').pop() : '') || '';
-  }
-  function createdKey(o){
-    const d=new Date(o?.created_at||0); if(isNaN(d)) return '0';
-    return d.toISOString().slice(0,19); // second precision
-  }
-  function baseSig(o){
-    const items=(Array.isArray(o?.items)?o.items:[]).map(i=>(i?.title||i?.name||'')+'|'+(i?.option||i?.variant||'')).join('||');
-    return [createdKey(o), filenameOf(o), deriveTotal(o), items || (o?.product_name||''), o?.client_name||o?.customer_name||''].join('~~');
-  }
-  function dedupeOrders(list){
-    const bySig=new Map();
-    const preferred=['whatsapp-checkout','checkout','manual'];
-    const priority=(o)=>{
-      const src=String(o?.source||'');
-      const idx=preferred.indexOf(src);
-      return [idx===-1?99:idx, -Number(o?.id||0)];
-    };
-    const sorted=[...(list||[])].sort((a,b)=>{
-      const sa=priority(a), sb=priority(b);
-      if(sa[0]!==sb[0]) return sa[0]-sb[0];
-      return sa[1]-sb[1];
-    });
-    for(const o of sorted){
-      const sig=baseSig(o);
-      if(!bySig.has(sig)) bySig.set(sig,o);
-    }
-    return [...bySig.values()].sort((a,b)=>{
-      const ta=new Date(a?.created_at||0).getTime()||0;
-      const tb=new Date(b?.created_at||0).getTime()||0;
-      if(tb!==ta) return tb-ta;
-      return Number(b?.id||0)-Number(a?.id||0);
-    });
-  }
-  function visibleOrders(){
-    const raw=Array.isArray(window.adminOrders)?window.adminOrders:[];
-    return dedupeOrders(raw.filter(o=>!(String(o?.source||'').toLowerCase()==='xbox-retro' && deriveTotal(o)<=0)));
-  }
-  window.vgShowProof=function(id){
-    const o=visibleOrders().find(x=>String(x.id)===String(id));
-    const p=$('#vgOrderPreview'); if(!p||!o) return;
-    document.querySelectorAll('.vg-admin-table tr').forEach(tr=>tr.classList.remove('vg-selected-order'));
-    document.querySelector(`[data-order-row="${id}"]`)?.classList.add('vg-selected-order');
-    const u=o?.proof?.url||o?.proof_url||'';
-    p.innerHTML=`<h3>Pedido ${oid(o)}</h3>
-      <div class="vg-order-meta">
-        <div><b>Total</b><br>${money(deriveTotal(o))}</div>
-        <div><b>Estado</b><br>${o?.status||'pendiente'}</div>
-        <div><b>Fuente</b><br>${o?.source||'web'}</div>
-        <div><b>Fecha</b><br>${new Date(o?.created_at).toLocaleString('es-MX')}</div>
-      </div>
-      <p><b>Artículos:</b><br>${itemLabel(o)}</p>
-      ${u?`<a class="vg-admin-btn primary" href="${u}" target="_blank">Abrir comprobante</a><img class="vg-proof-preview-img" src="${u}" onerror="this.style.display='none'">`:'<p>No hay comprobante.</p>'}
-      <div style="margin-top:12px"><button class="vg-admin-btn" onclick="navigator.clipboard.writeText('Pedido ${oid(o)}')">Copiar número</button></div>`;
-  };
-  window.vgAdminRenderOrders=function(msg){
-    const b=$('#vgAdminOrdersList'); if(!b) return;
-    if(msg){b.innerHTML=`<div class="vg-admin-note">${msg}</div>`; return;}
-    const q=($('#vgOrderSearch')?.value||'').toLowerCase();
-    const f=$('#vgOrderFilter')?.value||'all';
-    let orders=visibleOrders().filter(o=>(f==='all'||o.status===f)&&(!q || JSON.stringify(o).toLowerCase().includes(q) || String(o.id).includes(q)));
-    if(!orders.length){ b.innerHTML='<div class="vg-admin-note">Sin compras registradas.</div>'; return; }
-    b.innerHTML=`<table class="vg-admin-table"><thead><tr><th>Pedido</th><th>Artículos</th><th>Total</th><th>Comprobante</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>${orders.map(o=>{const u=o?.proof?.url||o?.proof_url||''; const fname=filenameOf(o); const total=deriveTotal(o); return `<tr data-order-row="${o.id}"><td><span class="vg-order-id">Pedido ${oid(o)}</span><br><small>${new Date(o.created_at).toLocaleString('es-MX')}</small><br>${o.source||''}</td><td>${itemLabel(o)}</td><td><b>${money(total)}</b></td><td>${u?`<button class="vg-admin-mini-btn" onclick="vgShowProof('${o.id}')">Ver imagen</button><br><small>${fname}</small>`:'Sin comprobante'}</td><td><select class="vg-admin-select" onchange="vgAdminUpdateOrder('${o.id}',this.value)">${['pendiente','validado','entregado','cancelado'].map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}</select></td><td><button class="vg-admin-mini-btn" onclick="vgShowProof('${o.id}')">Detalle</button><button class="vg-admin-mini-btn" onclick="navigator.clipboard.writeText('Pedido ${oid(o)}')">Copiar ID</button></td></tr>`}).join('')}</tbody></table>`;
-  };
-  const oldLoad=window.vgAdminLoadOrders;
-  window.vgAdminLoadOrders=async function(){
-    if(typeof oldLoad==='function') await oldLoad();
-    const stats=$('#vgAdminStats');
-    const visible=visibleOrders();
-    if(stats){
-      const total=visible.reduce((s,o)=>s+deriveTotal(o),0);
-      const pending=visible.filter(o=>String(o.status||'').toLowerCase()==='pendiente').length;
-      const proofs=visible.filter(o=>o?.proof?.url||o?.proof_url).length;
-      stats.innerHTML=`<div class="vg-admin-stat"><b>${visible.length}</b><span>Compras</span></div><div class="vg-admin-stat"><b>${money(total)}</b><span>Total</span></div><div class="vg-admin-stat"><b>${pending}</b><span>Pendientes</span></div><div class="vg-admin-stat"><b>${proofs}</b><span>Comprobantes</span></div>`;
-    }
-    window.vgAdminRenderOrders();
-  };
-})();
-</script>
-
-
-<style id="vg-admin-refresh-v51">
-  #vgAdminModal .vg-admin-panel{width:min(96vw,1700px)!important;max-height:94vh!important}
-  #vgAdminModal .vg-admin-content{padding:18px 18px 22px!important}
+<style id="vg-final-fix-v52">
+  #vgAdminOrders .vg-admin-note{display:none!important}
+  #vgAdminModal .vg-admin-panel{width:min(96vw,1700px)!important;height:min(94vh,980px)!important;max-height:94vh!important}
+  #vgAdminModal .vg-admin-content{padding:18px!important}
   #vgAdminModal .vg-admin-head h2{font-size:2rem!important;margin-bottom:4px!important}
-  #vgAdminModal .vg-admin-head p{opacity:.78!important}
   #vgAdminModal .vg-admin-tabs{gap:10px!important;flex-wrap:wrap!important}
   #vgAdminModal .vg-admin-tab{padding:12px 16px!important}
 
-  #vgAdminOrders .vg-admin-note{display:none!important}
   #vgAdminStats{display:grid!important;grid-template-columns:repeat(4,minmax(140px,1fr))!important;gap:12px!important;margin-bottom:14px!important}
   #vgAdminStats .vg-admin-stat{padding:14px 16px!important;border-radius:16px!important;background:rgba(255,255,255,.04)!important;border:1px solid rgba(255,255,255,.08)!important}
-  #vgAdminStats .vg-admin-stat b{display:block!important;font-size:1.55rem!important;line-height:1.1!important;margin-bottom:4px!important}
-  #vgAdminStats .vg-admin-stat span{opacity:.8!important;font-size:.92rem!important}
-
-  #vgAdminOrders .vg-admin-tools{display:grid!important;grid-template-columns:minmax(220px,1fr) 170px auto!important;gap:10px!important;align-items:center!important;margin-bottom:16px!important}
+  #vgAdminStats .vg-admin-stat b{display:block!important;font-size:1.5rem!important;line-height:1.1!important;margin-bottom:4px!important}
+  #vgAdminOrders .vg-admin-tools{display:grid!important;grid-template-columns:minmax(220px,1fr) 170px auto!important;gap:10px!important;margin-bottom:16px!important}
   #vgAdminOrders .vg-admin-tools .vg-admin-btn.primary{display:none!important}
-  #vgAdminOrders .vg-order-layout{display:grid!important;grid-template-columns:minmax(0,1.35fr) minmax(360px,.95fr)!important;gap:18px!important;align-items:start!important}
+
+  #vgAdminOrders .vg-order-layout{display:grid!important;grid-template-columns:minmax(0,1.35fr) minmax(380px,.9fr)!important;gap:18px!important;align-items:start!important}
   #vgAdminOrdersList{min-width:0!important;max-height:calc(92vh - 260px)!important;overflow:auto!important;padding-right:4px!important}
-  #vgOrderPreview{min-width:0!important;position:sticky!important;top:0!important;max-height:calc(92vh - 260px)!important;overflow:auto!important;padding:18px!important;border-radius:20px!important;background:linear-gradient(180deg,rgba(17,23,50,.94),rgba(10,14,32,.94))!important;border:1px solid rgba(70,230,220,.14)!important}
-  .vg-order-card{display:grid!important;grid-template-columns:170px minmax(180px,1fr) 115px 170px 150px 170px!important;gap:14px!important;align-items:start!important;padding:14px 14px!important;margin-bottom:12px!important;border-radius:18px!important;background:rgba(255,255,255,.035)!important;border:1px solid rgba(255,255,255,.07)!important;transition:.18s ease}
-  .vg-order-card:hover,.vg-order-card.active{border-color:rgba(70,230,220,.38)!important;box-shadow:0 10px 28px rgba(0,0,0,.22)!important;background:linear-gradient(180deg,rgba(28,41,84,.34),rgba(13,18,37,.45))!important}
-  .vg-order-col h5{margin:0 0 6px!important;font-size:.78rem!important;letter-spacing:.08em!important;text-transform:uppercase!important;opacity:.72!important}
-  .vg-order-id-badge{display:inline-flex!important;align-items:center!important;gap:6px!important;padding:8px 12px!important;border-radius:999px!important;background:rgba(70,230,220,.1)!important;border:1px solid rgba(70,230,220,.32)!important;color:#eafefd!important;font-weight:700!important;margin-bottom:8px!important}
-  .vg-order-main-title{font-size:1.02rem!important;font-weight:700!important;line-height:1.25!important;margin-bottom:2px!important}
+  #vgOrderPreview{min-width:0!important;position:sticky!important;top:0!important;max-height:calc(92vh - 260px)!important;overflow:auto!important;padding:18px!important;border-radius:20px!important;background:linear-gradient(180deg,rgba(17,23,50,.95),rgba(10,14,32,.96))!important;border:1px solid rgba(70,230,220,.14)!important}
+
+  .vg-order-card{display:grid!important;grid-template-columns:160px minmax(190px,1fr) 110px 170px 145px 160px!important;gap:14px!important;align-items:start!important;padding:14px!important;margin-bottom:12px!important;border-radius:18px!important;background:rgba(255,255,255,.035)!important;border:1px solid rgba(255,255,255,.07)!important}
+  .vg-order-card.active,.vg-order-card:hover{border-color:rgba(70,230,220,.38)!important;background:linear-gradient(180deg,rgba(28,41,84,.34),rgba(13,18,37,.45))!important}
+  .vg-order-col h5{margin:0 0 6px!important;font-size:.76rem!important;letter-spacing:.08em!important;text-transform:uppercase!important;opacity:.72!important}
+  .vg-order-id-badge{display:inline-flex!important;padding:8px 12px!important;border-radius:999px!important;background:rgba(70,230,220,.1)!important;border:1px solid rgba(70,230,220,.32)!important;color:#eafefd!important;font-weight:800!important;margin-bottom:8px!important}
+  .vg-order-main-title{font-size:1.02rem!important;font-weight:800!important;line-height:1.25!important}
   .vg-order-sub{opacity:.82!important;line-height:1.35!important}
-  .vg-order-proof-btn,.vg-order-action-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;padding:10px 12px!important;border-radius:14px!important;border:1px solid rgba(70,230,220,.25)!important;background:rgba(20,78,78,.28)!important;color:#eaffff!important;font-weight:700!important;text-decoration:none!important;cursor:pointer!important}
-  .vg-order-proof-btn:hover,.vg-order-action-btn:hover{filter:brightness(1.08)!important}
+  .vg-order-proof-btn,.vg-order-action-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;padding:10px 12px!important;border-radius:14px!important;border:1px solid rgba(70,230,220,.25)!important;background:rgba(20,78,78,.28)!important;color:#eaffff!important;font-weight:800!important;text-decoration:none!important;cursor:pointer!important}
   .vg-order-actions{display:flex!important;flex-wrap:wrap!important;gap:8px!important}
-  .vg-order-status{width:100%!important;min-width:140px!important}
-  .vg-empty-state{padding:28px!important;border-radius:18px!important;background:rgba(255,255,255,.03)!important;border:1px dashed rgba(255,255,255,.12)!important;text-align:center!important;opacity:.86!important}
   .vg-proof-preview-img{width:100%!important;max-height:560px!important;object-fit:contain!important;border-radius:18px!important;margin-top:14px!important;background:rgba(255,255,255,.03)!important;border:1px solid rgba(255,255,255,.08)!important}
   .vg-preview-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin:14px 0!important}
   .vg-preview-pill{padding:10px 12px!important;border-radius:14px!important;background:rgba(255,255,255,.04)!important;border:1px solid rgba(255,255,255,.07)!important}
   .vg-preview-pill b{display:block!important;font-size:.82rem!important;opacity:.72!important;margin-bottom:3px!important}
-  .vg-preview-title{font-size:1.5rem!important;font-weight:800!important;margin-bottom:8px!important}
+  .vg-empty-state{padding:28px!important;border-radius:18px!important;background:rgba(255,255,255,.03)!important;border:1px dashed rgba(255,255,255,.12)!important;text-align:center!important;opacity:.86!important}
 
   #vgAdminProducts .vg-admin-tools{display:grid!important;grid-template-columns:minmax(240px,1fr) auto auto!important;gap:10px!important;align-items:center!important;margin-bottom:14px!important}
   #vgAdminProductsList{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(380px,1fr))!important;gap:16px!important}
   .vg-product-admin-card{padding:16px!important;border-radius:18px!important;background:rgba(255,255,255,.035)!important;border:1px solid rgba(255,255,255,.08)!important}
   .vg-product-admin-head{display:grid!important;grid-template-columns:88px 1fr auto!important;gap:12px!important;align-items:center!important}
   .vg-product-admin-head img{width:88px!important;height:88px!important;object-fit:cover!important;border-radius:14px!important;background:#0a0d18!important;border:1px solid rgba(255,255,255,.08)!important}
-  .vg-product-admin-head b{display:block!important;font-size:1.02rem!important;margin-bottom:4px!important}
-  .vg-product-admin-head small{opacity:.72!important;line-height:1.3!important}
-  .vg-status-chip{display:inline-flex!important;align-items:center!important;padding:6px 10px!important;border-radius:999px!important;background:rgba(126,102,255,.14)!important;border:1px solid rgba(126,102,255,.28)!important;font-size:.82rem!important;margin-top:6px!important}
+  .vg-status-chip{display:inline-flex!important;padding:6px 10px!important;border-radius:999px!important;background:rgba(126,102,255,.14)!important;border:1px solid rgba(126,102,255,.28)!important;font-size:.82rem!important;margin-top:6px!important}
   .vg-product-admin-fields{display:grid!important;grid-template-columns:1fr 140px 170px!important;gap:10px!important;margin-top:14px!important}
-  .vg-product-admin-fields .vg-admin-input,.vg-product-admin-fields .vg-admin-select{width:100%!important}
   .vg-product-admin-options{display:grid!important;gap:8px!important;margin-top:14px!important}
   .vg-product-admin-oprow{display:grid!important;grid-template-columns:minmax(0,1fr) 130px!important;gap:8px!important}
   .vg-product-admin-actions{display:flex!important;flex-wrap:wrap!important;gap:8px!important;margin-top:14px!important}
-  .vg-product-admin-actions .vg-admin-btn{padding:10px 12px!important}
-  .vg-hint{margin-top:10px!important;font-size:.84rem!important;opacity:.72!important;line-height:1.4!important}
 
   #vgAdminSettings .vg-settings-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))!important;gap:16px!important}
   #vgAdminSettings .vg-setting-card{padding:18px!important;border-radius:18px!important;background:rgba(255,255,255,.035)!important;border:1px solid rgba(255,255,255,.08)!important}
-  #vgAdminSettings .vg-setting-card h4{margin:0 0 8px!important;font-size:1rem!important}
-  #vgAdminSettings .vg-setting-card p{margin:0 0 12px!important;opacity:.8!important;line-height:1.45!important}
-  #vgAdminSettings .vg-setting-card .vg-admin-btn{margin:4px 6px 0 0!important}
+  .vg-admin-login-card{max-width:520px;margin:28px auto;padding:22px;border-radius:24px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.045)}
+  .vg-admin-login-card h3{margin:0 0 8px;color:#fff;font-size:1.4rem}.vg-admin-login-card p{margin:0 0 16px;color:#a7acba}.vg-admin-login-card .vg-admin-input{width:100%;margin-bottom:10px}
 
-  @media (max-width: 1220px){
-    #vgAdminOrders .vg-order-layout{grid-template-columns:1fr!important}
-    #vgOrderPreview{position:relative!important;max-height:none!important}
-    #vgAdminOrdersList{max-height:none!important}
-  }
-  @media (max-width: 960px){
-    #vgAdminStats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-    #vgAdminOrders .vg-admin-tools{grid-template-columns:1fr 1fr auto!important}
-    .vg-order-card{grid-template-columns:1fr 1fr!important}
-    #vgAdminProducts .vg-admin-tools{grid-template-columns:1fr!important}
-    #vgAdminProductsList{grid-template-columns:1fr!important}
-    .vg-product-admin-fields,.vg-product-admin-oprow,.vg-preview-grid{grid-template-columns:1fr!important}
-    .vg-product-admin-head{grid-template-columns:72px 1fr!important}
-    .vg-product-admin-head .vg-admin-btn{grid-column:1/-1!important}
-  }
+  @media(max-width:1220px){#vgAdminOrders .vg-order-layout{grid-template-columns:1fr!important}#vgOrderPreview{position:relative!important;max-height:none!important}#vgAdminOrdersList{max-height:none!important}}
+  @media(max-width:960px){#vgAdminStats{grid-template-columns:repeat(2,minmax(0,1fr))!important}.vg-order-card{grid-template-columns:1fr 1fr!important}.vg-preview-grid,.vg-product-admin-fields,.vg-product-admin-oprow{grid-template-columns:1fr!important}#vgAdminProductsList{grid-template-columns:1fr!important}.vg-product-admin-head{grid-template-columns:72px 1fr!important}.vg-product-admin-head .vg-admin-btn{grid-column:1/-1!important}}
 </style>
-<script id="vg-admin-refresh-v51">
+
+<script id="vg-final-fix-v52">
 (function(){
-  const CFG='vg_supabase_cfg_v1';
-  const state = window.vgAdminState = window.vgAdminState || {orders:[],products:[],selectedOrderId:null,sb:null,sig:''};
-  const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
-  const services=()=>Array.isArray(window.SERVICES)?window.SERVICES:[];
-  const money=n=>'$'+Number(n||0).toLocaleString('es-MX',{maximumFractionDigits:0})+' MXN';
-  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
-  function readCfg(){try{const c=JSON.parse(localStorage.getItem(CFG)||'{}');return {url:c.url||window.VG_SUPABASE_URL||'',anon:c.anon||window.VG_SUPABASE_ANON_KEY||''}}catch(e){return {url:window.VG_SUPABASE_URL||'',anon:window.VG_SUPABASE_ANON_KEY||''}}}
-  function getSB(){const c=readCfg(); if(!window.supabase||!c.url||!c.anon) return null; const sig=c.url+'|'+c.anon.slice(0,10); if(!state.sb||state.sig!==sig){state.sb=window.supabase.createClient(c.url,c.anon); state.sig=sig;} return state.sb;}
-  function parseMoney(v){ if(typeof v==='number') return v; const txt=String(v||'').replace(/MXN|USD|\$/gi,' ').replace(/,/g,''); const m=txt.match(/-?\d+(?:\.\d+)?/g); return m&&m.length?Number(m[m.length-1]):0; }
-  function normalizeMeta(stock){ const s=String(stock||''); return {hidden:/\[HIDDEN\]/i.test(s), soldout:/\[SOLDOUT\]|agotado/i.test(s), raw:s.replace(/\[(?:HIDDEN|SOLDOUT)\]/ig,'').trim()}; }
-  function cleanSource(source){ const s=String(source||'web'); const map={"whatsapp-checkout":"checkout","sendPaymentWhatsApp":"checkout","button-click":"catálogo","window-open":"checkout","checkout-comprobante":"checkout","xbox-retro":"retro"}; return map[s]||s; }
-  function proofUrl(o){ return o?.proof?.url || o?.proof_url || ''; }
-  function proofName(o){ return o?.proof?.filename || (proofUrl(o)?proofUrl(o).split('/').pop():'') || 'Sin archivo'; }
-  function orderItems(o){ return Array.isArray(o?.items)?o.items:[]; }
-  function orderTitle(o){ const items=orderItems(o); if(items.length) return items[0].title || items[0].name || 'Pedido'; return o?.product_name || 'Pedido'; }
-  function orderOptionText(o){ const items=orderItems(o); if(items.length){ return items.map(i=>[i.option||i.variant||'', parseMoney(i.price)?'· '+money(parseMoney(i.price)):''].filter(Boolean).join(' ')).filter(Boolean).join('<br>'); } return o?.product_option||''; }
-  function deriveTotal(o){ let t=parseMoney(o?.total); if(t>0) return t; const items=orderItems(o); t=items.reduce((s,i)=>s+parseMoney(i.price),0); if(t>0) return t; return parseMoney(o?.price_label||0); }
-  function selectOrder(id){ state.selectedOrderId=String(id); renderOrders(); renderOrderPreview(); }
-  window.vgAdminSelectOrder=selectOrder;
-  function previewHtml(o){ if(!o) return `<h3 class="vg-preview-title">Vista de comprobante</h3><p>Selecciona un pedido para ver aquí la captura, el total y la información del cliente.</p>`; const img=proofUrl(o); return `<div class="vg-preview-title">Pedido #${esc(o.id)}</div><div class="vg-preview-grid"><div class="vg-preview-pill"><b>Total</b>${money(deriveTotal(o))}</div><div class="vg-preview-pill"><b>Estado</b>${esc(o.status||'pendiente')}</div><div class="vg-preview-pill"><b>Fuente</b>${esc(cleanSource(o.source))}</div><div class="vg-preview-pill"><b>Fecha</b>${esc(new Date(o.created_at).toLocaleString('es-MX'))}</div></div><p><b>Artículo principal:</b><br>${esc(orderTitle(o))}</p>${orderOptionText(o)?`<p><b>Opciones:</b><br>${orderOptionText(o)}</p>`:''}${img?`<a class="vg-order-proof-btn" href="${img}" target="_blank">Abrir comprobante completo</a><img class="vg-proof-preview-img" src="${img}" alt="Comprobante" onerror="this.style.display='none'">`:'<div class="vg-empty-state">Este pedido todavía no tiene comprobante adjunto.</div>'}`; }
-  function renderOrderPreview(){ const box=$('#vgOrderPreview'); if(!box) return; const o=state.orders.find(x=>String(x.id)===String(state.selectedOrderId)); box.innerHTML=previewHtml(o); }
-  function orderCard(o){ const active=String(o.id)===String(state.selectedOrderId); const img=proofUrl(o); const title=orderTitle(o); const option=orderOptionText(o); return `<div class="vg-order-card ${active?'active':''}" data-order-id="${esc(o.id)}"><div class="vg-order-col"><h5>Pedido</h5><div class="vg-order-id-badge">Pedido #${esc(o.id)}</div><div class="vg-order-sub">${esc(new Date(o.created_at).toLocaleString('es-MX'))}</div><div class="vg-order-sub">${esc(cleanSource(o.source))}</div></div><div class="vg-order-col"><h5>Artículo</h5><div class="vg-order-main-title">${esc(title)}</div><div class="vg-order-sub">${option||'<span style="opacity:.65">Sin detalle extra</span>'}</div></div><div class="vg-order-col"><h5>Total</h5><div class="vg-order-main-title">${money(deriveTotal(o))}</div></div><div class="vg-order-col"><h5>Comprobante</h5>${img?`<button class="vg-order-proof-btn" onclick="vgAdminSelectOrder('${esc(o.id)}')">Ver imagen</button><div class="vg-order-sub" style="margin-top:8px">${esc(proofName(o))}</div>`:'<div class="vg-order-sub">Sin comprobante</div>'}</div><div class="vg-order-col"><h5>Estado</h5><select class="vg-admin-select vg-order-status" onchange="vgAdminUpdateOrder('${esc(o.id)}',this.value)">${['pendiente','validado','entregado','cancelado'].map(s=>`<option value="${s}" ${String(o.status||'')===s?'selected':''}>${s}</option>`).join('')}</select></div><div class="vg-order-col"><h5>Acciones</h5><div class="vg-order-actions"><button class="vg-order-action-btn" onclick="vgAdminSelectOrder('${esc(o.id)}')">Detalle</button><button class="vg-order-action-btn" onclick="navigator.clipboard.writeText('Pedido #${esc(o.id)}')">Copiar ID</button></div></div></div>`; }
-  function renderStats(){ const box=$('#vgAdminStats'); if(!box) return; const arr=state.orders; const total=arr.reduce((s,o)=>s+deriveTotal(o),0); const pending=arr.filter(o=>String(o.status||'')==='pendiente').length; const proofs=arr.filter(o=>proofUrl(o)).length; box.innerHTML=`<div class="vg-admin-stat"><b>${arr.length}</b><span>Pedidos reales</span></div><div class="vg-admin-stat"><b>${money(total)}</b><span>Total registrado</span></div><div class="vg-admin-stat"><b>${pending}</b><span>Pendientes</span></div><div class="vg-admin-stat"><b>${proofs}</b><span>Con comprobante</span></div>`; }
-  function dedupeOrders(list){ const grouped=new Map(); const pref=['checkout','retro','web']; const normSource=s=>cleanSource(s); for(const o of list||[]){ const sec=(new Date(o.created_at||0)).toISOString().slice(0,19); const sig=[sec, orderTitle(o), deriveTotal(o), proofName(o)].join('||'); const prev=grouped.get(sig); if(!prev){grouped.set(sig,o); continue;} const a=pref.indexOf(normSource(prev.source)); const b=pref.indexOf(normSource(o.source)); if((b===-1?99:b) < (a===-1?99:a)) grouped.set(sig,o); }
-    return [...grouped.values()].sort((a,b)=>{ const dt=new Date(b.created_at)-new Date(a.created_at); return dt || (parseInt(b.id)||0)-(parseInt(a.id)||0); }); }
-  async function loadOrders(){ const client=getSB(); const box=$('#vgAdminOrdersList'); if(!client){ if(box) box.innerHTML='<div class="vg-empty-state">Configura primero Supabase en la pestaña <b>Supabase</b>.</div>'; return; } const {data,error}=await client.from('orders').select('*').order('created_at',{ascending:false}).limit(500); if(error){ if(box) box.innerHTML=`<div class="vg-empty-state">${esc(error.message)}</div>`; return; } state.orders=dedupeOrders(data||[]); if(!state.selectedOrderId && state.orders[0]) state.selectedOrderId=String(state.orders[0].id); if(state.selectedOrderId && !state.orders.some(o=>String(o.id)===String(state.selectedOrderId))) state.selectedOrderId=state.orders[0]?String(state.orders[0].id):null; renderStats(); renderOrders(); }
-  function renderOrders(){ const box=$('#vgAdminOrdersList'); if(!box) return; const q=($('#vgOrderSearch')?.value||'').toLowerCase(); const f=$('#vgOrderFilter')?.value||'all'; let list=state.orders.filter(o=> (f==='all'||String(o.status||'')===f) && (!q || [o.id,o.source,o.status,orderTitle(o),proofName(o),JSON.stringify(orderItems(o))].join(' ').toLowerCase().includes(q))); if(!list.length){ box.innerHTML='<div class="vg-empty-state">No encontré pedidos con ese filtro.</div>'; renderOrderPreview(); return; } if(!list.some(o=>String(o.id)===String(state.selectedOrderId))) state.selectedOrderId=String(list[0].id); box.innerHTML=list.map(orderCard).join(''); renderOrderPreview(); }
-  async function updateOrder(id,status){ const client=getSB(); if(!client) return; const {error}=await client.from('orders').update({status}).eq('id',id); if(error){alert(error.message); return;} const found=state.orders.find(o=>String(o.id)===String(id)); if(found) found.status=status; renderOrders(); }
-  window.vgAdminUpdateOrder=updateOrder;
+'use strict';
 
-  function serviceStatusLabel(meta){ if(meta.hidden) return 'Oculto'; if(meta.soldout) return 'Agotado'; return 'Activo'; }
-  function applyProductsToCatalog(){ const map=Object.fromEntries((state.products||[]).map(p=>[String(p.product_id),p])); services().forEach(p=>{ const ov=map[String(p.id)]||{}; const meta=normalizeMeta(ov.stock||p.adminStock||''); if(ov.price_label!==undefined && ov.price_label!=='') p.priceLabel=ov.price_label; if(ov.badge) p.adminBadge=ov.badge; if(meta.soldout) p.adminBadge='Agotado'; p.adminStock=meta.raw || ov.stock || p.adminStock || ''; if(Array.isArray(ov.options)&&Array.isArray(p.options)){ ov.options.forEach((x,i)=>{ if(p.options[i]){ p.options[i].name = x?.name ?? p.options[i].name; p.options[i].price = Number(x?.price ?? p.options[i].price ?? 0); } }); } p.__hidden=meta.hidden; });
-    if(typeof window.renderProducts==='function'){
-      if(!window.__vgOrigRenderProducts) window.__vgOrigRenderProducts=window.renderProducts;
-      window.renderProducts=function(){ window.__vgOrigRenderProducts(); services().filter(s=>s.__hidden).forEach(s=>{ document.querySelectorAll(`[onclick="openProduct(${s.id})"]`).forEach(el=>el.closest('.card,.service-carousel-card,article')?.remove()); }); };
-      window.renderProducts();
-    }
+window.WHATSAPP_NUMBER = '526611078412';
+
+const CFG='vg_supabase_cfg_v1';
+const ADMIN_SESSION_KEY='vg_admin_email_session_v52';
+const ADMIN_EMAIL=(window.VG_ADMIN_EMAIL||'admin@vesselgames.com').toLowerCase();
+const ADMIN_PASSWORD=window.VG_ADMIN_PASSWORD||'Vessel2026!';
+const state = window.vgAdminState = window.vgAdminState || {orders:[],products:[],selectedOrderId:null,sb:null,sig:''};
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const services=()=>Array.isArray(window.SERVICES)?window.SERVICES:[];
+const money=n=>'$'+Number(n||0).toLocaleString('es-MX',{maximumFractionDigits:0})+' MXN';
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
+
+function readCfg(){try{const c=JSON.parse(localStorage.getItem(CFG)||'{}');return {url:c.url||window.VG_SUPABASE_URL||'',anon:c.anon||window.VG_SUPABASE_ANON_KEY||''}}catch(e){return {url:window.VG_SUPABASE_URL||'',anon:window.VG_SUPABASE_ANON_KEY||''}}}
+function getSB(){const c=readCfg(); if(!window.supabase||!c.url||!c.anon) return null; const sig=c.url+'|'+c.anon.slice(0,10); if(!state.sb||state.sig!==sig){state.sb=window.supabase.createClient(c.url,c.anon); state.sig=sig;} return state.sb;}
+function parseMoney(v){ if(typeof v==='number') return v; const txt=String(v||'').replace(/MXN|USD|\$/gi,' ').replace(/,/g,''); const m=txt.match(/-?\d+(?:\.\d+)?/g); return m&&m.length?Number(m[m.length-1]):0; }
+function normalizeMeta(stock){ const s=String(stock||''); return {hidden:/\[HIDDEN\]/i.test(s), soldout:/\[SOLDOUT\]|agotado/i.test(s), raw:s.replace(/\[(?:HIDDEN|SOLDOUT)\]/ig,'').trim()}; }
+function proofUrl(o){ return o?.proof?.url || o?.proof_url || ''; }
+function proofName(o){ return o?.proof?.filename || (proofUrl(o)?proofUrl(o).split('/').pop():'') || 'Sin archivo'; }
+function orderItems(o){ return Array.isArray(o?.items)?o.items:[]; }
+function orderTitle(o){ const items=orderItems(o); if(items.length) return items[0].title || items[0].name || 'Pedido'; return o?.product_name || 'Pedido'; }
+function orderOptionText(o){ const items=orderItems(o); if(items.length){ return items.map(i=>[esc(i.option||i.variant||''), parseMoney(i.price)?'· '+money(parseMoney(i.price)):''].filter(Boolean).join(' ')).filter(Boolean).join('<br>'); } return esc(o?.product_option||''); }
+function deriveTotal(o){ let t=parseMoney(o?.total); if(t>0) return t; const items=orderItems(o); t=items.reduce((s,i)=>s+parseMoney(i.price),0); if(t>0) return t; return parseMoney(o?.price_label||o?.product_option||0); }
+function cleanSource(source){ const s=String(source||'web'); const map={"whatsapp-checkout":"checkout","sendPaymentWhatsApp":"checkout","button-click":"catálogo","window-open":"checkout","checkout-comprobante":"checkout","xbox-retro":"retro"}; return map[s]||s; }
+
+/* Login */
+function isLogged(){return sessionStorage.getItem(ADMIN_SESSION_KEY)==='1';}
+function loginMarkup(){return `<div class="vg-admin-login-card"><h3>Acceso administrador</h3><p>Ingresa correo y contraseña.</p><input class="vg-admin-input" id="vgAdminEmail" type="email" placeholder="Correo administrador"><input class="vg-admin-input" id="vgAdminPassword" type="password" placeholder="Contraseña"><button class="vg-admin-btn primary" onclick="vgAdminLogin()">Entrar</button></div>`}
+window.vgAdminLogin=function(){const e=($('#vgAdminEmail')?.value||'').trim().toLowerCase(),p=$('#vgAdminPassword')?.value||'';if(e===ADMIN_EMAIL&&p===ADMIN_PASSWORD){sessionStorage.setItem(ADMIN_SESSION_KEY,'1');window.vgAdminOpen();}else alert('Correo o contraseña incorrectos.')};
+window.vgAdminLogout=function(){sessionStorage.removeItem(ADMIN_SESSION_KEY);window.vgAdminOpen();};
+function ensureLogout(){if(!isLogged())return; if($('#vgAdminLogoutBtn'))return; const head=$('.vg-admin-head > div'); if(head){const b=document.createElement('button');b.id='vgAdminLogoutBtn';b.className='vg-admin-btn danger';b.textContent='Cerrar sesión';b.onclick=window.vgAdminLogout;head.appendChild(b);}}
+window.vgAdminOpen=function(){const modal=$('#vgAdminModal'); if(modal) modal.classList.add('active'); const content=$('#vgAdminModal .vg-admin-content'); if(!isLogged()){ if(content) content.innerHTML=loginMarkup(); return;} ensureSections(); ensureLogout(); bindTabs(); window.vgAdminLoadAll();};
+
+/* WhatsApp checkout with fixed number */
+function uploadProofCompat(client,id){
+  const input=$('#proofInput');
+  if(!input||!input.files||!input.files[0]) return Promise.resolve(null);
+  const f=input.files[0], ext=(f.name.split('.').pop()||'jpg').toLowerCase(), path=`${id}/${Date.now()}.${ext}`;
+  return client.storage.from('comprobantes').upload(path,f,{upsert:true,contentType:f.type||'image/jpeg'}).then(async up=>{
+    if(up.error) return null;
+    const pub=client.storage.from('comprobantes').getPublicUrl(path);
+    const proof={filename:f.name,path,url:pub.data.publicUrl,size:f.size,type:f.type};
+    await client.from('orders').update({proof,proof_url:proof.url}).eq('id',id);
+    return proof;
+  }).catch(()=>null);
+}
+window.vgCreateSupabaseOrder=async function(source){
+  const client=getSB(); if(!client){alert('Supabase no está configurado.'); return null;}
+  const d=typeof window.cartData==='function'?window.cartData():{items:[],total:0};
+  const first=(d.items||[])[0]||{};
+  const key=JSON.stringify({items:d.items,total:d.total});
+  if(window.__vgSingleOrder && window.__vgSingleOrder.key===key && Date.now()-window.__vgSingleOrder.time<15000) return window.__vgSingleOrder.order||null;
+  window.__vgSingleOrder={key,time:Date.now(),order:null};
+  const payload={source:source||'whatsapp-checkout',status:'pendiente',total:Number(d.total||0),items:d.items||[],proof:null,client_name:'Cliente WhatsApp',client_phone:'',client_email:'',customer_name:'Cliente WhatsApp',customer_phone:'',customer_email:'',product_name:first.title||'Pedido',product_option:first.option||'',payment_method:'',proof_url:'',notes:'Pedido registrado desde la web'};
+  let r=await client.from('orders').insert(payload).select().single();
+  if(r.error){
+    r=await client.from('orders').insert({source:payload.source,status:payload.status,total:payload.total,items:payload.items,product_name:payload.product_name,product_option:payload.product_option,customer_email:'',customer_name:'Cliente WhatsApp'}).select().single();
   }
-  async function loadProducts(){ const client=getSB(); const box=$('#vgAdminProductsList'); if(!client){ if(box) box.innerHTML='<div class="vg-empty-state">Configura Supabase para editar precios, stock y estado.</div>'; renderSettings(); return; } const {data,error}=await client.from('products_admin').select('*').order('title'); if(error){ if(box) box.innerHTML=`<div class="vg-empty-state">${esc(error.message)}</div>`; return; } state.products=data||[]; applyProductsToCatalog(); renderProductsSection(); renderSettings(); }
-  function currentOverride(id){ return (state.products||[]).find(x=>String(x.product_id)===String(id)) || {}; }
-  function productCard(p){ const ov=currentOverride(p.id), meta=normalizeMeta(ov.stock||p.adminStock||''), opts=Array.isArray(ov.options)&&ov.options.length?ov.options:(p.options||[]); return `<div class="vg-product-admin-card" data-pid="${esc(p.id)}"><div class="vg-product-admin-head"><img src="${esc(p.image||'portada.png')}" onerror="this.src='portada.png'"><div><b>${esc(p.title)}</b><small>${esc(p.categoryName||p.category||'Servicio')} · ID ${esc(p.id)}</small><span class="vg-status-chip">Estado: ${serviceStatusLabel(meta)}</span></div><button class="vg-admin-btn primary" onclick="vgAdminSaveProduct('${esc(p.id)}')">Guardar</button></div><div class="vg-product-admin-fields"><input class="vg-admin-input" data-field="price_label" placeholder="Precio visible" value="${esc(ov.price_label||p.priceLabel||'')}"><input class="vg-admin-input" data-field="stock" placeholder="Stock / nota" value="${esc(meta.raw || '')}"><select class="vg-admin-select" data-field="badge">${['','Más vendido','Disponible','Nuevo','Oferta','Bajo pedido','Stock limitado','Agotado'].map(x=>`<option value="${x}" ${String(ov.badge||p.adminBadge||'')===x?'selected':''}>${x||'Sin badge'}</option>`).join('')}</select></div><div class="vg-product-admin-options">${opts.map((op,i)=>`<div class="vg-product-admin-oprow"><input class="vg-admin-input" data-on="${i}" value="${esc(op.name||'')}" placeholder="Nombre de opción"><input class="vg-admin-input" type="number" data-op="${i}" value="${Number(op.price||0)}" placeholder="Precio"></div>`).join('')}</div><div class="vg-product-admin-actions"><button class="vg-admin-btn" onclick="vgAdminMarkSoldOut('${esc(p.id)}')">Marcar agotado</button><button class="vg-admin-btn" onclick="vgAdminHideProduct('${esc(p.id)}')">Ocultar</button><button class="vg-admin-btn" onclick="vgAdminActivateProduct('${esc(p.id)}')">Activar</button><button class="vg-admin-btn danger" onclick="vgAdminResetProduct('${esc(p.id)}')">Restablecer</button></div><div class="vg-hint">Tip: <b>Ocultar</b> lo quita de la vista principal. <b>Agotado</b> deja el producto visible pero marcado como no disponible.</div></div>`; }
-  function renderProductsSection(){ const box=$('#vgAdminProductsList'); if(!box) return; const q=($('#vgProductSearch')?.value||'').toLowerCase(); const list=services().filter(p=>!q || [p.title,p.description,p.categoryName,String(p.id)].join(' ').toLowerCase().includes(q)); box.innerHTML=list.length?list.map(productCard).join(''):'<div class="vg-empty-state">No encontré productos con ese filtro.</div>'; }
-  async function saveProduct(id){ const client=getSB(); if(!client){alert('Configura Supabase'); return;} const card=document.querySelector(`[data-pid="${id}"]`); const p=services().find(x=>String(x.id)===String(id)); if(!card||!p){alert('Producto no encontrado'); return;} const existing=currentOverride(id); const oldMeta=normalizeMeta(existing.stock||''); const rawStock=card.querySelector('[data-field="stock"]')?.value?.trim()||''; let tokens=''; if(oldMeta.hidden) tokens+='[HIDDEN]'; if(oldMeta.soldout) tokens+='[SOLDOUT]'; const stockValue=(tokens?tokens+' ':'')+rawStock; const payload={product_id:String(id), title:p.title, category:p.categoryName||p.category||'', image:p.image||'', price_label:card.querySelector('[data-field="price_label"]')?.value?.trim()||'', stock:stockValue.trim(), badge:card.querySelector('[data-field="badge"]')?.value||'', options:(p.options||[]).map((op,i)=>({name:card.querySelector(`[data-on="${i}"]`)?.value||op.name||'', price:Number(card.querySelector(`[data-op="${i}"]`)?.value||op.price||0)})), updated_at:new Date().toISOString() };
-    const {error}=await client.from('products_admin').upsert(payload,{onConflict:'product_id'}); if(error){alert(error.message); return;} await loadProducts(); alert('Producto actualizado'); }
-  async function setMeta(id, kind){ const card=document.querySelector(`[data-pid="${id}"]`); if(!card) return; const stockInput=card.querySelector('[data-field="stock"]'); const badge=card.querySelector('[data-field="badge"]'); const existing=currentOverride(id); const meta=normalizeMeta(existing.stock||''); let raw=(stockInput?.value||meta.raw||'').trim(); let tokens=[]; if(kind==='soldout'){ tokens.push('[SOLDOUT]'); if(badge) badge.value='Agotado'; }
-    if(kind==='hidden'){ if(!tokens.includes('[HIDDEN]')) tokens.push('[HIDDEN]'); }
-    if(kind==='active'){ tokens=[]; if(badge && badge.value==='Agotado') badge.value=''; }
-    if(stockInput) stockInput.value=raw; const p=services().find(x=>String(x.id)===String(id)); const client=getSB(); if(!client||!p) return;
-    const payload={product_id:String(id), title:p.title, category:p.categoryName||p.category||'', image:p.image||'', price_label:card.querySelector('[data-field="price_label"]')?.value?.trim()||p.priceLabel||'', stock:(tokens.join(' ')+' '+raw).trim(), badge:badge?.value||'', options:(p.options||[]).map((op,i)=>({name:card.querySelector(`[data-on="${i}"]`)?.value||op.name||'', price:Number(card.querySelector(`[data-op="${i}"]`)?.value||op.price||0)})), updated_at:new Date().toISOString()};
-    const {error}=await client.from('products_admin').upsert(payload,{onConflict:'product_id'}); if(error){alert(error.message); return;} await loadProducts(); }
-  async function resetProduct(id){ const client=getSB(); if(!client) return; if(!confirm('Esto elimina la configuración personalizada de este artículo y vuelve a los valores originales.')) return; const {error}=await client.from('products_admin').delete().eq('product_id',String(id)); if(error){alert(error.message); return;} await loadProducts(); }
-  async function syncProducts(){ const client=getSB(); if(!client){alert('Configura Supabase'); return;} for(const p of services()){ const payload={product_id:String(p.id), title:p.title, category:p.categoryName||p.category||'', image:p.image||'', price_label:p.priceLabel||'', stock:p.adminStock||'', badge:p.adminBadge||'', options:p.options||[], updated_at:new Date().toISOString()}; await client.from('products_admin').upsert(payload,{onConflict:'product_id'}); } await loadProducts(); alert('Catálogo sincronizado con Supabase'); }
-  window.vgAdminLoadProducts=loadProducts;
-  window.vgAdminRenderProducts=renderProductsSection;
-  window.vgAdminSaveProduct=saveProduct;
-  window.vgAdminSyncProducts=syncProducts;
-  window.vgAdminMarkSoldOut=id=>setMeta(id,'soldout');
-  window.vgAdminHideProduct=id=>setMeta(id,'hidden');
-  window.vgAdminActivateProduct=id=>setMeta(id,'active');
-  window.vgAdminResetProduct=resetProduct;
+  if(r.error){alert('Supabase no guardó el pedido: '+r.error.message); window.__vgSingleOrder=null; return null;}
+  const proof=await uploadProofCompat(client,r.data.id);
+  const out={...r.data,proof:proof||r.data.proof};
+  window.__vgSingleOrder.order=out;
+  return out;
+};
+window.sendPaymentWhatsApp=async function(){
+  const d=typeof window.cartData==='function'?window.cartData():{items:[],total:0};
+  const order=await window.vgCreateSupabaseOrder('whatsapp-checkout');
+  if(!order) return;
+  const lines=(d.items||[]).map((it,i)=>`${i+1}. ${it.title} - ${it.option||'Opción'} - ${money(parseMoney(it.price))}`).join('\n');
+  const text=`Hola, envío mi comprobante de pago.\n\nPedido #${order.id}\n\n${lines}\n\nTotal: ${money(parseMoney(d.total))}\n\nAdjunto comprobante en este chat.`;
+  window.open(`https://wa.me/${window.WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`,'_blank');
+};
 
-  function ensureSettings(){ if($('#vgAdminSettings')) return; const content=$('#vgAdminModal .vg-admin-content'); if(!content) return; const sec=document.createElement('section'); sec.className='vg-admin-section'; sec.id='vgAdminSettings'; sec.innerHTML='<div class="vg-settings-grid"></div>'; content.appendChild(sec); }
-  function renderSettings(){ ensureSettings(); const box=$('#vgAdminSettings .vg-settings-grid'); if(!box) return; const total=services().length; const custom=(state.products||[]).length; const hidden=services().filter(s=>s.__hidden).length; const soldout=services().filter(s=>String(s.adminBadge||'').toLowerCase()==='agotado').length; box.innerHTML=`<div class="vg-setting-card"><h4>Resumen rápido</h4><p>Tienes <b>${total}</b> servicios en catálogo, <b>${custom}</b> con configuración personalizada, <b>${hidden}</b> ocultos y <b>${soldout}</b> marcados como agotados.</p><button class="vg-admin-btn primary" onclick="vgAdminSyncProducts()">Sincronizar catálogo</button><button class="vg-admin-btn" onclick="vgAdminLoadProducts()">Recargar productos</button></div><div class="vg-setting-card"><h4>Estados de servicios</h4><p>Desde la pestaña <b>Artículos</b> puedes ocultar productos, marcarlos como agotados, restablecerlos o actualizar precios y opciones sin tocar el código.</p><button class="vg-admin-btn" onclick="document.querySelector('.vg-admin-tab[data-tab=\'products\']')?.click()">Ir a artículos</button></div><div class="vg-setting-card"><h4>Pedidos</h4><p>La pestaña <b>Compras</b> se centra en pedidos reales, comprobantes y estados. Si quieres revisar lo más reciente, usa el filtro y el panel lateral de vista previa.</p><button class="vg-admin-btn" onclick="document.querySelector('.vg-admin-tab[data-tab=\'orders\']')?.click()">Ir a compras</button></div>`; }
+/* Retro fixed totals */
+function readRetroSelectedFromDOM(){
+  const cards=$$('#retroGridContainer .vg-retro-game.active,#retroGridContainer .retro-game.active');
+  return cards.map(card=>{
+    const name=(card.querySelector('h4')?.textContent||'Juego Xbox Retro').trim();
+    const price=parseMoney(card.querySelector('.vg-retro-price,.retro-price')?.textContent||'0');
+    return {name,price};
+  }).filter(g=>g.name);
+}
+function retroCalcDOM(){
+  const games=readRetroSelectedFromDOM();
+  const subtotal=games.reduce((s,g)=>s+parseMoney(g.price),0);
+  const discount=games.length>=3?Math.round(subtotal*0.10):0;
+  return {games,subtotal,discount,total:subtotal-discount};
+}
+function updateRetroDOMTotals(){
+  const t=retroCalcDOM();
+  const c=$('#retroCount'), s=$('#retroSubtotal'), d=$('#retroDiscount'), total=$('#retroTotal');
+  if(c) c.textContent=t.games.length;
+  if(s) s.textContent=money(t.subtotal);
+  if(d) d.textContent='-'+money(t.discount);
+  if(total) total.textContent=money(t.total);
+  const btn=$('#retroModal .retro-footer .modal-actions .primary.whatsapp');
+  if(btn) btn.textContent=t.games.length?`Comprar ${t.games.length} juego${t.games.length===1?'':'s'} · ${money(t.total)}`:'Selecciona juegos para comprar';
+  return t;
+}
+const oldToggle=window.toggleRetroGame;
+window.toggleRetroGame=function(id){ if(typeof oldToggle==='function') oldToggle(id); setTimeout(updateRetroDOMTotals,30); };
+const oldRenderRetro=window.renderRetroGrid;
+window.renderRetroGrid=function(){ if(typeof oldRenderRetro==='function') oldRenderRetro(); setTimeout(updateRetroDOMTotals,30); };
+window.buyRetroNow=function(){
+  const t=updateRetroDOMTotals();
+  if(!t.games.length){alert('Selecciona al menos un juego.'); return;}
+  const option=t.games.map(g=>`${g.name} (${money(g.price)})`).join(', ');
+  const order={items:[{title:'Colección Xbox Retro',option,price:t.total}], total:t.total, source:'retro'};
+  window.pendingPaymentOrder=order;
+  if(typeof window.closeRetroModal==='function') window.closeRetroModal();
+  if(typeof window.openPaymentModal==='function') window.openPaymentModal(order);
+  else window.open(`https://wa.me/${window.WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola, quiero comprar: '+option+'. Total: '+money(t.total))}`,'_blank');
+};
+window.addRetroToCart=function(){
+  const t=updateRetroDOMTotals();
+  if(!t.games.length){alert('Selecciona al menos un juego.'); return;}
+  const option=t.games.map(g=>`${g.name} (${money(g.price)})`).join(', ');
+  if(Array.isArray(window.cart)){
+    window.cart.push({title:'Colección Xbox Retro',option,price:t.total});
+    if(typeof window.updateCartCount==='function') window.updateCartCount();
+    if(typeof window.closeRetroModal==='function') window.closeRetroModal();
+    if(typeof window.openCart==='function') window.openCart();
+  }
+};
+setInterval(()=>{ if($('#retroModal.active')) updateRetroDOMTotals(); },800);
 
-  window.vgAdminExportOrders=function(){ const box=$('#vgAdminExportBox'); if(box) box.value=JSON.stringify(state.orders,null,2); };
-  window.vgAdminExportCSV=function(){ const rows=[['pedido','fecha','estado','total','fuente','comprobante','articulos']]; state.orders.forEach(o=>rows.push([o.id,o.created_at,o.status,deriveTotal(o),cleanSource(o.source),proofUrl(o),(orderItems(o)||[]).map(i=>`${i.title} ${i.option||''} ${parseMoney(i.price)}`).join(' | ')])); const box=$('#vgAdminExportBox'); if(box) box.value=rows.map(r=>r.map(x=>`"${String(x??'').replaceAll('"','""')}"`).join(',')).join('\n'); };
-  window.vgAdminLoadOrders=loadOrders;
-  window.vgAdminLoadAll=async function(){ ensureSettings(); bindTabs(); await loadOrders(); await loadProducts(); renderSettings(); };
+/* Admin orders */
+function orderCard(o){ const active=String(o.id)===String(state.selectedOrderId); const img=proofUrl(o); return `<div class="vg-order-card ${active?'active':''}" data-order-id="${esc(o.id)}"><div class="vg-order-col"><h5>Pedido</h5><div class="vg-order-id-badge">Pedido #${esc(o.id)}</div><div class="vg-order-sub">${esc(new Date(o.created_at).toLocaleString('es-MX'))}</div><div class="vg-order-sub">${esc(cleanSource(o.source))}</div></div><div class="vg-order-col"><h5>Artículo</h5><div class="vg-order-main-title">${esc(orderTitle(o))}</div><div class="vg-order-sub">${orderOptionText(o)||'<span style="opacity:.65">Sin detalle extra</span>'}</div></div><div class="vg-order-col"><h5>Total</h5><div class="vg-order-main-title">${money(deriveTotal(o))}</div></div><div class="vg-order-col"><h5>Comprobante</h5>${img?`<button class="vg-order-proof-btn" onclick="vgAdminSelectOrder('${esc(o.id)}')">Ver imagen</button><div class="vg-order-sub" style="margin-top:8px">${esc(proofName(o))}</div>`:'<div class="vg-order-sub">Sin comprobante</div>'}</div><div class="vg-order-col"><h5>Estado</h5><select class="vg-admin-select vg-order-status" onchange="vgAdminUpdateOrder('${esc(o.id)}',this.value)">${['pendiente','validado','entregado','cancelado'].map(s=>`<option value="${s}" ${String(o.status||'')===s?'selected':''}>${s}</option>`).join('')}</select></div><div class="vg-order-col"><h5>Acciones</h5><div class="vg-order-actions"><button class="vg-order-action-btn" onclick="vgAdminSelectOrder('${esc(o.id)}')">Detalle</button><button class="vg-order-action-btn" onclick="navigator.clipboard.writeText('Pedido #${esc(o.id)}')">Copiar ID</button></div></div></div>`; }
+function renderOrderPreview(){ const box=$('#vgOrderPreview'); if(!box) return; const o=state.orders.find(x=>String(x.id)===String(state.selectedOrderId)); if(!o){box.innerHTML='<div class="vg-empty-state">Selecciona un pedido para ver el comprobante.</div>';return;} const img=proofUrl(o); box.innerHTML=`<h3>Pedido #${esc(o.id)}</h3><div class="vg-preview-grid"><div class="vg-preview-pill"><b>Total</b>${money(deriveTotal(o))}</div><div class="vg-preview-pill"><b>Estado</b>${esc(o.status||'pendiente')}</div><div class="vg-preview-pill"><b>Fuente</b>${esc(cleanSource(o.source))}</div><div class="vg-preview-pill"><b>Fecha</b>${esc(new Date(o.created_at).toLocaleString('es-MX'))}</div></div><p><b>Artículo:</b><br>${esc(orderTitle(o))}</p>${orderOptionText(o)?`<p><b>Opciones:</b><br>${orderOptionText(o)}</p>`:''}${img?`<a class="vg-order-proof-btn" href="${img}" target="_blank">Abrir comprobante completo</a><img class="vg-proof-preview-img" src="${img}" alt="Comprobante" onerror="this.style.display='none'">`:'<div class="vg-empty-state">Este pedido todavía no tiene comprobante.</div>'}`; }
+function dedupeOrders(list){ const map=new Map(); for(const o of list||[]){ const sec=(new Date(o.created_at||0)).toISOString().slice(0,19); const sig=[sec,orderTitle(o),deriveTotal(o),proofName(o)].join('|'); if(!map.has(sig)) map.set(sig,o); } return [...map.values()].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)||Number(b.id||0)-Number(a.id||0)); }
+window.vgAdminSelectOrder=function(id){state.selectedOrderId=String(id); window.vgAdminRenderOrders(); renderOrderPreview();};
+window.vgAdminRenderOrders=function(msg){ const box=$('#vgAdminOrdersList'); if(!box) return; if(msg){box.innerHTML=`<div class="vg-empty-state">${esc(msg)}</div>`;return;} const q=($('#vgOrderSearch')?.value||'').toLowerCase(); const f=$('#vgOrderFilter')?.value||'all'; let arr=state.orders.filter(o=>(f==='all'||o.status===f)&&(!q||[o.id,o.source,o.status,orderTitle(o),proofName(o),JSON.stringify(orderItems(o))].join(' ').toLowerCase().includes(q))); if(!arr.length){box.innerHTML='<div class="vg-empty-state">No encontré pedidos.</div>';renderOrderPreview();return;} if(!arr.some(o=>String(o.id)===String(state.selectedOrderId))) state.selectedOrderId=String(arr[0].id); box.innerHTML=arr.map(orderCard).join(''); renderOrderPreview(); };
+window.vgAdminLoadOrders=async function(){ const client=getSB(); if(!client){window.vgAdminRenderOrders('Configura Supabase primero.');return;} const {data,error}=await client.from('orders').select('*').order('created_at',{ascending:false}).limit(500); if(error){window.vgAdminRenderOrders(error.message);return;} state.orders=dedupeOrders(data||[]); if(!state.selectedOrderId&&state.orders[0]) state.selectedOrderId=String(state.orders[0].id); const stats=$('#vgAdminStats'); if(stats){ const total=state.orders.reduce((s,o)=>s+deriveTotal(o),0); const pending=state.orders.filter(o=>String(o.status||'')==='pendiente').length; const proofs=state.orders.filter(o=>proofUrl(o)).length; stats.innerHTML=`<div class="vg-admin-stat"><b>${state.orders.length}</b><span>Pedidos reales</span></div><div class="vg-admin-stat"><b>${money(total)}</b><span>Total registrado</span></div><div class="vg-admin-stat"><b>${pending}</b><span>Pendientes</span></div><div class="vg-admin-stat"><b>${proofs}</b><span>Con comprobante</span></div>`; } window.vgAdminRenderOrders(); };
+window.vgAdminUpdateOrder=async function(id,status){ const client=getSB(); if(!client)return; const {error}=await client.from('orders').update({status}).eq('id',id); if(error){alert(error.message);return;} const o=state.orders.find(x=>String(x.id)===String(id)); if(o)o.status=status; window.vgAdminRenderOrders(); };
 
-  function bindTabs(){ $$('.vg-admin-tab').forEach(btn=>{ btn.onclick=()=>{ $$('.vg-admin-tab').forEach(b=>b.classList.toggle('active',b===btn)); $$('.vg-admin-section').forEach(sec=>sec.classList.remove('active')); const sec=$('#vgAdmin'+btn.dataset.tab.charAt(0).toUpperCase()+btn.dataset.tab.slice(1)); if(sec) sec.classList.add('active'); }; }); }
-
-  document.addEventListener('click',e=>{ const card=e.target.closest('.vg-order-card'); if(card && !e.target.closest('button,select,a')) selectOrder(card.getAttribute('data-order-id')); });
-  ensureSettings(); bindTabs();
+/* Admin products / settings */
+function ensureSections(){
+  const content=$('#vgAdminModal .vg-admin-content'); if(!content) return;
+  if(!$('#vgAdminSettings')){ const sec=document.createElement('section'); sec.className='vg-admin-section'; sec.id='vgAdminSettings'; sec.innerHTML='<div class="vg-settings-grid"></div>'; content.appendChild(sec); }
+  if(!document.querySelector('.vg-admin-tab[data-tab="settings"]')){ const tabs=$('#vgAdminModal .vg-admin-tabs'); if(tabs){ const b=document.createElement('button'); b.className='vg-admin-tab'; b.dataset.tab='settings'; b.textContent='Ajustes rápidos'; tabs.appendChild(b); } }
+}
+function renderSettings(){ ensureSections(); const box=$('#vgAdminSettings .vg-settings-grid'); if(!box)return; const total=services().length, custom=(state.products||[]).length; const hidden=services().filter(s=>s.__hidden).length; const soldout=services().filter(s=>String(s.adminBadge||'').toLowerCase()==='agotado').length; box.innerHTML=`<div class="vg-setting-card"><h4>Resumen rápido</h4><p>Tienes <b>${total}</b> servicios, <b>${custom}</b> modificados, <b>${hidden}</b> ocultos y <b>${soldout}</b> agotados.</p><button class="vg-admin-btn primary" onclick="vgAdminSyncProducts()">Sincronizar catálogo</button><button class="vg-admin-btn" onclick="vgAdminLoadProducts()">Recargar</button></div><div class="vg-setting-card"><h4>Control de servicios</h4><p>En <b>Artículos</b> puedes cambiar precios, opciones, stock, ocultar servicios o marcarlos como agotados.</p><button class="vg-admin-btn" onclick="document.querySelector('.vg-admin-tab[data-tab=\\'products\\']')?.click()">Ir a artículos</button></div>`; }
+function applyProductsToCatalog(){ const map=Object.fromEntries((state.products||[]).map(p=>[String(p.product_id),p])); services().forEach(p=>{ const ov=map[String(p.id)]||{}; const meta=normalizeMeta(ov.stock||p.adminStock||''); if(ov.price_label) p.priceLabel=ov.price_label; if(ov.badge) p.adminBadge=ov.badge; if(meta.soldout) p.adminBadge='Agotado'; p.adminStock=meta.raw||ov.stock||p.adminStock||''; p.__hidden=meta.hidden; if(Array.isArray(ov.options)&&Array.isArray(p.options)){ ov.options.forEach((x,i)=>{ if(p.options[i]){p.options[i].name=x?.name??p.options[i].name; p.options[i].price=Number(x?.price??p.options[i].price??0);} }); } }); if(typeof window.renderProducts==='function'){ window.renderProducts(); services().filter(s=>s.__hidden).forEach(s=>document.querySelectorAll(`[onclick="openProduct(${s.id})"]`).forEach(el=>el.closest('.card,.service-carousel-card,article')?.remove())); } }
+function productCard(p){ const ov=(state.products||[]).find(x=>String(x.product_id)===String(p.id))||{}; const meta=normalizeMeta(ov.stock||p.adminStock||''); const opts=Array.isArray(ov.options)&&ov.options.length?ov.options:(p.options||[]); return `<div class="vg-product-admin-card" data-pid="${esc(p.id)}"><div class="vg-product-admin-head"><img src="${esc(p.image||'portada.png')}" onerror="this.src='portada.png'"><div><b>${esc(p.title)}</b><small>${esc(p.categoryName||p.category||'Servicio')} · ID ${esc(p.id)}</small><span class="vg-status-chip">Estado: ${meta.hidden?'Oculto':meta.soldout?'Agotado':'Activo'}</span></div><button class="vg-admin-btn primary" onclick="vgAdminSaveProduct('${esc(p.id)}')">Guardar</button></div><div class="vg-product-admin-fields"><input class="vg-admin-input" data-field="price_label" placeholder="Precio visible" value="${esc(ov.price_label||p.priceLabel||'')}"><input class="vg-admin-input" data-field="stock" placeholder="Stock / nota" value="${esc(meta.raw||'')}"><select class="vg-admin-select" data-field="badge">${['','Más vendido','Disponible','Nuevo','Oferta','Bajo pedido','Stock limitado','Agotado'].map(x=>`<option value="${x}" ${String(ov.badge||p.adminBadge||'')===x?'selected':''}>${x||'Sin badge'}</option>`).join('')}</select></div><div class="vg-product-admin-options">${opts.map((op,i)=>`<div class="vg-product-admin-oprow"><input class="vg-admin-input" data-on="${i}" value="${esc(op.name||'')}" placeholder="Nombre de opción"><input class="vg-admin-input" type="number" data-op="${i}" value="${Number(op.price||0)}" placeholder="Precio"></div>`).join('')}</div><div class="vg-product-admin-actions"><button class="vg-admin-btn" onclick="vgAdminMarkSoldOut('${esc(p.id)}')">Marcar agotado</button><button class="vg-admin-btn" onclick="vgAdminHideProduct('${esc(p.id)}')">Ocultar</button><button class="vg-admin-btn" onclick="vgAdminActivateProduct('${esc(p.id)}')">Activar</button><button class="vg-admin-btn danger" onclick="vgAdminResetProduct('${esc(p.id)}')">Restablecer</button></div></div>`; }
+window.vgAdminRenderProducts=function(){ const box=$('#vgAdminProductsList'); if(!box)return; const q=($('#vgProductSearch')?.value||'').toLowerCase(); const list=services().filter(p=>!q||[p.id,p.title,p.description,p.categoryName].join(' ').toLowerCase().includes(q)); box.innerHTML=list.length?list.map(productCard).join(''):'<div class="vg-empty-state">No encontré productos.</div>'; };
+window.vgAdminLoadProducts=async function(){ const client=getSB(); if(!client){window.vgAdminRenderProducts();renderSettings();return;} const {data,error}=await client.from('products_admin').select('*'); if(error){alert(error.message);state.products=[];} else state.products=data||[]; applyProductsToCatalog(); window.vgAdminRenderProducts(); renderSettings(); };
+async function saveProductWithMeta(id,kind){ const client=getSB(); if(!client){alert('Configura Supabase');return;} const card=document.querySelector(`[data-pid="${id}"]`), p=services().find(x=>String(x.id)===String(id)); if(!card||!p)return; const existing=(state.products||[]).find(x=>String(x.product_id)===String(id))||{}; const old=normalizeMeta(existing.stock||''); let raw=card.querySelector('[data-field="stock"]')?.value?.trim()||old.raw||''; let hidden=old.hidden, soldout=old.soldout; if(kind==='hidden') hidden=true; if(kind==='soldout') soldout=true; if(kind==='active'){hidden=false;soldout=false;} const badge=card.querySelector('[data-field="badge"]')?.value||''; const tokens=[hidden?'[HIDDEN]':'',soldout?'[SOLDOUT]':''].filter(Boolean).join(' '); const payload={product_id:String(id),title:p.title,category:p.categoryName||p.category||'',image:p.image||'',price_label:card.querySelector('[data-field="price_label"]')?.value?.trim()||'',stock:(tokens+' '+raw).trim(),badge:kind==='soldout'?'Agotado':badge,options:(p.options||[]).map((op,i)=>({name:card.querySelector(`[data-on="${i}"]`)?.value||op.name||'',price:Number(card.querySelector(`[data-op="${i}"]`)?.value||op.price||0)})),updated_at:new Date().toISOString()}; const {error}=await client.from('products_admin').upsert(payload,{onConflict:'product_id'}); if(error){alert(error.message);return;} await window.vgAdminLoadProducts(); if(!kind) alert('Producto actualizado'); }
+window.vgAdminSaveProduct=id=>saveProductWithMeta(id,'');
+window.vgAdminMarkSoldOut=id=>saveProductWithMeta(id,'soldout');
+window.vgAdminHideProduct=id=>saveProductWithMeta(id,'hidden');
+window.vgAdminActivateProduct=id=>saveProductWithMeta(id,'active');
+window.vgAdminResetProduct=async function(id){ const client=getSB(); if(!client)return; if(!confirm('¿Restablecer este producto a sus datos originales?')) return; const {error}=await client.from('products_admin').delete().eq('product_id',String(id)); if(error){alert(error.message);return;} await window.vgAdminLoadProducts(); };
+window.vgAdminSyncProducts=async function(){ const client=getSB(); if(!client){alert('Configura Supabase');return;} for(const p of services()){await client.from('products_admin').upsert({product_id:String(p.id),title:p.title,category:p.categoryName||p.category||'',image:p.image||'',price_label:p.priceLabel||'',stock:p.adminStock||'',badge:p.adminBadge||'',options:p.options||[],updated_at:new Date().toISOString()},{onConflict:'product_id'});} await window.vgAdminLoadProducts(); alert('Catálogo sincronizado'); };
+window.vgAdminLoadAll=async function(){ if(typeof window.vgAdminLoadOrders==='function') await window.vgAdminLoadOrders(); if(typeof window.vgAdminLoadProducts==='function') await window.vgAdminLoadProducts(); renderSettings(); };
+function bindTabs(){ $$('.vg-admin-tab').forEach(btn=>{ btn.onclick=()=>{ $$('.vg-admin-tab').forEach(b=>b.classList.toggle('active',b===btn)); $$('.vg-admin-section').forEach(sec=>sec.classList.remove('active')); const sec=$('#vgAdmin'+btn.dataset.tab.charAt(0).toUpperCase()+btn.dataset.tab.slice(1)); if(sec) sec.classList.add('active'); if(btn.dataset.tab==='settings') renderSettings(); }; }); }
+document.addEventListener('DOMContentLoaded',()=>{ensureSections();bindTabs();renderSettings();});
+setTimeout(()=>{ensureSections();bindTabs();renderSettings();},600);
 })();
 </script>
 
