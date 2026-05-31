@@ -13,7 +13,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="https://www.vesselgames.xyz/portada.png" />
   <link rel="preconnect" href="https://i.imgur.com" />
-  <link rel="preload" as="video" href="https://i.imgur.com/9j4rD8c.mp4" type="video/mp4" fetchpriority="high" /><script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=DYYS-pUjImV6RilekSxb7Ae3THB_s7xTAf2sWsal5OD-xZwMYeFwobnt7XQ9i8clkFWfMDo3R3XiHoAZknV25yaAEx77O8k2pdTmUZOvxxTmijmKP6KxaTn-l3ga4USW15xnDXKRXtBAILW3hevgXYPIy6ZCithmQtrqsdm2FPK8zSs8SyG105PTBKylzmX4yj3YrriVND2gPLHkkLDYwrpkTCNb3RWx8SRsa3tu4q95aV3MF0i4ryv2BiCGSjFFjF0wpdE-iIPA6tc9pL9CyQ" charset="UTF-8"></script><style>
+  <link rel="preload" as="video" href="https://i.imgur.com/9j4rD8c.mp4" type="video/mp4" fetchpriority="high" /><script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=a1WDzhTIA5BT0_4LABG7O8bzK5NSEYi1-aIPwVLpK-Yqx_di_Sxsyk2QZF7j3GXS44Q7TIycs9Shi-RUbUKuSlB-oiLpWpjM6-5de3NdC5Ne3YHCxFybY4QgY2B2YYxUGIn8uK6ZXvrWedJ1XeC1PDkri_rb-bwxDHguiofyiwJ5UK7GMRjuKOkcCB8yTHpA7dntsfGtwo3LZ3hNC9_5F-_yrFl_q6E-f2y7sfucfxf2gyvtqtCIjqx7iBnrOeuETpjXlTHc_ABcjHz2JLemHw" charset="UTF-8"></script><style>
     :root {
       --bg:#080a12; --panel:#111522; --panel2:#161b2b; --line:rgba(255,255,255,.10);
       --text:#f6f8ff; --muted:#aab2c8; --soft:#727b96; --brand:#8b5cf6; --brand2:#19e6c1;
@@ -7094,6 +7094,415 @@ setTimeout(()=>{ensureSections();bindTabs();renderSettings();},600);
   setTimeout(placeAdminButton,200);
   setTimeout(placeAdminButton,900);
   setTimeout(addEnterKey,500);
+})();
+</script>
+
+
+<style id="vg-offers-login-beauty-v54">
+  /* ========= Admin login visual cleanup ========= */
+  #vgAdminModal .vg-admin-panel.vg-login-mode{
+    width:min(920px, calc(100vw - 26px)) !important;
+    height:min(760px, 90vh) !important;
+    grid-template-rows:auto minmax(0,1fr) !important;
+    position:relative !important;
+    overflow:hidden !important;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(25,230,193,.18), transparent 28%),
+      radial-gradient(circle at 84% 18%, rgba(139,92,246,.18), transparent 26%),
+      radial-gradient(circle at 50% 120%, rgba(75,107,255,.14), transparent 35%),
+      linear-gradient(180deg, rgba(11,16,31,.98), rgba(6,10,20,.99)) !important;
+    box-shadow:0 30px 90px rgba(0,0,0,.58), 0 0 0 1px rgba(255,255,255,.05) inset !important;
+  }
+  #vgAdminModal .vg-admin-panel.vg-login-mode .vg-admin-tabs{
+    display:none !important;
+  }
+  #vgAdminModal .vg-admin-panel.vg-login-mode .vg-admin-head{
+    position:relative !important;
+    z-index:3 !important;
+    border-bottom:1px solid rgba(255,255,255,.08) !important;
+    background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.01)) !important;
+    backdrop-filter:blur(14px) !important;
+  }
+  #vgAdminModal .vg-admin-panel.vg-login-mode .vg-admin-content{
+    position:relative !important;
+    overflow:hidden !important;
+    display:grid !important;
+    place-items:center !important;
+    padding:36px !important;
+    isolation:isolate !important;
+  }
+  #vgAdminModal .vg-admin-panel.vg-login-mode .vg-admin-content::before,
+  #vgAdminModal .vg-admin-panel.vg-login-mode .vg-admin-content::after{
+    content:"";
+    position:absolute;
+    border-radius:50%;
+    filter:blur(10px);
+    opacity:.95;
+    z-index:0;
+    animation:vgLoginFloat 16s ease-in-out infinite alternate;
+  }
+  #vgAdminModal .vg-admin-panel.vg-login-mode .vg-admin-content::before{
+    width:380px;height:380px;left:-90px;top:30px;
+    background:radial-gradient(circle, rgba(25,230,193,.22), transparent 70%);
+  }
+  #vgAdminModal .vg-admin-panel.vg-login-mode .vg-admin-content::after{
+    width:420px;height:420px;right:-120px;bottom:-20px;
+    background:radial-gradient(circle, rgba(139,92,246,.24), transparent 72%);
+    animation-duration:19s;
+  }
+  @keyframes vgLoginFloat{
+    0%{transform:translate3d(0,0,0) scale(1)}
+    100%{transform:translate3d(20px,-16px,0) scale(1.08)}
+  }
+  #vgAdminModal .vg-admin-panel.vg-login-mode .vg-admin-login-card{
+    position:relative !important;
+    z-index:2 !important;
+    width:min(560px, 100%) !important;
+    margin:0 auto !important;
+    padding:34px 30px 28px !important;
+    border-radius:30px !important;
+    border:1px solid rgba(255,255,255,.10) !important;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03)),
+      linear-gradient(180deg, rgba(15,20,36,.94), rgba(10,13,25,.96)) !important;
+    backdrop-filter:blur(16px) !important;
+    box-shadow:0 24px 68px rgba(0,0,0,.38), 0 0 0 1px rgba(255,255,255,.03) inset !important;
+  }
+  #vgAdminModal .vg-admin-panel.vg-login-mode .vg-admin-login-card::before{
+    content:"Admin seguro";
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:999px;
+    font-size:.78rem;
+    font-weight:900;
+    letter-spacing:.04em;
+    margin-bottom:18px;
+    color:#d8fffa;
+    border:1px solid rgba(25,230,193,.20);
+    background:rgba(25,230,193,.08);
+  }
+  #vgAdminModal .vg-admin-panel.vg-login-mode .vg-admin-login-card h3{
+    margin:0 0 10px !important;
+    font-size:2rem !important;
+    line-height:1.02 !important;
+  }
+  #vgAdminModal .vg-admin-panel.vg-login-mode .vg-admin-login-card p{
+    margin:0 0 18px !important;
+    color:#b7bfd3 !important;
+    line-height:1.6 !important;
+    font-size:.98rem !important;
+  }
+  #vgAdminModal .vg-admin-panel.vg-login-mode .vg-admin-input{
+    height:58px !important;
+    border-radius:18px !important;
+    margin-top:12px !important;
+    font-size:1rem !important;
+    background:rgba(255,255,255,.045) !important;
+    border:1px solid rgba(255,255,255,.09) !important;
+  }
+  #vgAdminModal .vg-admin-panel.vg-login-mode .vg-admin-btn.primary{
+    margin-top:16px !important;
+    min-width:150px !important;
+    height:50px !important;
+    border-radius:16px !important;
+    font-size:1rem !important;
+  }
+  #vgAdminModal .vg-admin-panel.vg-login-mode .vg-admin-head p:last-child{
+    display:none !important;
+  }
+
+  /* ========= Offers section ========= */
+  .offers-showcase{
+    margin:20px auto 34px !important;
+    padding:20px !important;
+    max-width:1480px !important;
+    border-radius:30px !important;
+    border:1px solid rgba(25,230,193,.14) !important;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.012)),
+      linear-gradient(180deg, rgba(11,16,31,.96), rgba(7,11,21,.98)) !important;
+    box-shadow:0 24px 70px rgba(0,0,0,.28) !important;
+  }
+  .offers-head{
+    display:flex;align-items:end;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    margin-bottom:18px !important;
+  }
+  .offers-head h2{margin:0 !important;font-size:clamp(1.8rem,3vw,2.7rem) !important;line-height:1 !important;}
+  .offers-head p{margin:6px 0 0 !important;color:#aeb8d6 !important;max-width:720px !important;}
+  .offers-grid{display:grid;grid-template-columns:1.25fr .95fr;gap:18px !important;}
+  .offer-card{
+    position:relative;overflow:hidden;border-radius:28px;padding:18px;
+    border:1px solid rgba(255,255,255,.09);
+    background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.016)), #0a0f1f;
+    box-shadow:0 20px 50px rgba(0,0,0,.26);
+    min-height:100%;
+  }
+  .offer-card::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(135deg, rgba(25,230,193,.06), transparent 30%, transparent 72%, rgba(139,92,246,.08));
+  }
+  .offer-freefire{display:grid;grid-template-columns:320px minmax(0,1fr);gap:18px;align-items:stretch;}
+  .offer-media{position:relative;border-radius:24px;overflow:hidden;min-height:100%;background:#0b1224;border:1px solid rgba(255,255,255,.08)}
+  .offer-media img{width:100%;height:100%;object-fit:cover;display:block}
+  .offer-media::after{content:"OFERTA ESPECIAL";position:absolute;left:14px;top:14px;padding:8px 12px;border-radius:999px;background:rgba(9,16,30,.84);border:1px solid rgba(25,230,193,.22);color:#d8fff8;font-size:.74rem;font-weight:950;letter-spacing:.05em}
+  .offer-body{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px;}
+  .offer-title-row{display:flex;justify-content:space-between;gap:14px;align-items:start;flex-wrap:wrap}
+  .offer-title-row h3{margin:0 !important;font-size:clamp(1.35rem,2vw,2.15rem)!important}
+  .offer-title-row p{margin:6px 0 0 !important;color:#b4bfd9 !important;line-height:1.55 !important}
+  .offer-chip{
+    align-self:start;padding:10px 14px;border-radius:999px;border:1px solid rgba(25,230,193,.22);
+    background:rgba(25,230,193,.08);color:#dbfffb;font-weight:900;font-size:.78rem;white-space:nowrap;
+  }
+  .offer-inline-note{padding:12px 14px;border-radius:16px;border:1px solid rgba(139,92,246,.18);background:rgba(139,92,246,.08);color:#e6ddff;font-size:.9rem;line-height:1.5}
+  .ff-packages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+  .ff-package{
+    position:relative;padding:14px;border-radius:18px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);
+    cursor:pointer;transition:.22s ease;min-height:88px;
+  }
+  .ff-package:hover{transform:translateY(-2px);border-color:rgba(25,230,193,.22)}
+  .ff-package.active{border-color:rgba(25,230,193,.34);background:linear-gradient(180deg, rgba(25,230,193,.10), rgba(25,230,193,.04));box-shadow:0 12px 28px rgba(0,0,0,.22)}
+  .ff-package b{display:block;font-size:1rem;color:#fff;margin-bottom:6px}
+  .ff-package span{display:block;color:#aeb9d6;font-size:.88rem}
+  .ff-package em{display:block;margin-top:8px;font-style:normal;color:#22F1D1;font-weight:900;font-size:1rem}
+  .offer-summary{
+    display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
+    padding:14px 16px;border-radius:18px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);
+  }
+  .offer-summary span{display:block;color:#96a2c1;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em}
+  .offer-summary b{display:block;color:#fff;font-size:1.05rem;margin-top:4px}
+  .offer-summary .price{font-size:1.35rem !important;color:#22F1D1 !important;font-weight:1000 !important}
+  .offer-actions{display:flex;gap:12px;flex-wrap:wrap}
+  .offer-btn{
+    border:none;cursor:pointer;border-radius:16px;padding:14px 18px;font-weight:950;font-size:.96rem;
+    background:linear-gradient(135deg,#8B5CF6 0%,#4B6BFF 52%,#22F1D1 100%);color:#fff;
+    box-shadow:0 12px 26px rgba(0,0,0,.22);
+  }
+  .offer-btn.alt{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);box-shadow:none;color:#e3eaff}
+
+  .offer-retro{
+    display:flex;flex-direction:column;justify-content:space-between;
+    background:
+      linear-gradient(140deg, rgba(12,18,34,.98), rgba(11,17,33,.94) 45%, rgba(26,11,54,.94) 100%),
+      radial-gradient(circle at 86% 18%, rgba(25,230,193,.18), transparent 28%);
+  }
+  .offer-retro .offer-title-row p{max-width:720px}
+  .retro-countdown{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:4px}
+  .count-box{padding:14px 10px;border-radius:18px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);text-align:center}
+  .count-box b{display:block;color:#fff;font-size:1.35rem;line-height:1}
+  .count-box span{display:block;margin-top:8px;color:#aab6d4;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em}
+  .retro-offer-note{padding:12px 14px;border-radius:16px;border:1px solid rgba(25,230,193,.18);background:rgba(25,230,193,.06);color:#d8fff8;font-size:.92rem;line-height:1.55}
+  .retro-offer-badges{display:flex;gap:8px;flex-wrap:wrap}
+  .retro-offer-badges span{padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);font-size:.8rem;font-weight:850;color:#e8f0ff}
+  .retro-expired{color:#ffb4b4 !important;border-color:rgba(255,110,110,.22)!important;background:rgba(255,110,110,.08)!important}
+
+  @media(max-width:1200px){
+    .offers-grid{grid-template-columns:1fr !important;}
+  }
+  @media(max-width:900px){
+    .offer-freefire{grid-template-columns:1fr !important;}
+    .offer-media{min-height:280px !important;}
+    .ff-packages{grid-template-columns:repeat(2,minmax(0,1fr)) !important;}
+  }
+  @media(max-width:640px){
+    .offers-showcase{padding:16px !important;border-radius:24px !important;}
+    .ff-packages{grid-template-columns:1fr !important;}
+    .retro-countdown{grid-template-columns:repeat(2,minmax(0,1fr)) !important;}
+    .offer-summary{grid-template-columns:1fr !important;}
+  }
+</style>
+
+<script id="vg-offers-login-beauty-v54-script">
+(function(){
+  const ADMIN_KEY='vg_admin_session';
+  const WHATSAPP_NUMBER='526611078412';
+  const FF_PACKAGES=[
+    ['1,166',161],['2,398',325],['2,970',425],['3,564',492],['4,136',569],['4,796',631],['5,302',723],['5,368',733],['12,320',1477]
+  ];
+
+  function fmtMXN(n){
+    return '$' + Number(n||0).toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0}) + ' MXN';
+  }
+  function nextMondayEnd(){
+    const now=new Date();
+    const d=new Date(now);
+    const day=d.getDay(); // 0 dom, 1 lun
+    let add=(1-day+7)%7;
+    if(add===0){
+      const end=new Date(d); end.setHours(23,59,59,999);
+      if(now<=end) return end;
+      add=7;
+    }
+    d.setDate(d.getDate()+add);
+    d.setHours(23,59,59,999);
+    return d;
+  }
+
+  function toggleAdminLoginView(){
+    const panel=document.querySelector('#vgAdminModal .vg-admin-panel');
+    const logged=sessionStorage.getItem(ADMIN_KEY)==='1';
+    if(panel) panel.classList.toggle('vg-login-mode', !logged);
+  }
+
+  function mountOffersSection(){
+    const homeTiles=document.getElementById('homeTiles');
+    if(!homeTiles || document.getElementById('offersShowcase')) return;
+    let ffImage='https://i.imgur.com/8zUIcAF.jpg';
+    try{
+      if(typeof SERVICES!=='undefined'){
+        const ff=SERVICES.find(s => /free fire/i.test(s.title||''));
+        if(ff && ff.image) ffImage=ff.image;
+      }
+    }catch(e){}
+
+    const html=`
+      <section class="offers-showcase" id="offersShowcase">
+        <div class="offers-head">
+          <div>
+            <span class="badge">Ofertas</span>
+            <h2>Ofertas especiales de la semana</h2>
+            <p>Precios visibles, compra rápida y promociones destacadas sin tocar el resto del catálogo.</p>
+          </div>
+          <div class="offer-chip">Promos destacadas y visibles</div>
+        </div>
+        <div class="offers-grid">
+          <article class="offer-card offer-freefire">
+            <div class="offer-media"><img src="${ffImage}" alt="Diamantes Free Fire" referrerpolicy="no-referrer"></div>
+            <div class="offer-body">
+              <div class="offer-title-row">
+                <div>
+                  <h3>OFERTAS · Diamantes Free Fire</h3>
+                  <p>Recargas directas vía <b>ID de Garena</b>. Elige tu paquete y compra al instante. También manejamos <b>cantidades mayores por privado</b>.</p>
+                </div>
+                <div class="offer-chip">Vía ID directos de Garena</div>
+              </div>
+              <div class="ff-packages" id="ffOfferPackages"></div>
+              <div class="offer-summary">
+                <div>
+                  <span>Paquete seleccionado</span>
+                  <b id="ffOfferSelected">1,166 diamantes</b>
+                </div>
+                <div>
+                  <span>Total</span>
+                  <b class="price" id="ffOfferPrice">$161 MXN</b>
+                </div>
+              </div>
+              <div class="offer-inline-note">Si necesitas un paquete mayor, te lo cotizamos por privado. Atención directa y rápida.</div>
+              <div class="offer-actions">
+                <button class="offer-btn" id="ffOfferBuyBtn">Comprar esta oferta</button>
+                <button class="offer-btn alt" onclick="showSection && showSection('gaming')">Ver más juegos</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="offer-card offer-retro">
+            <div class="offer-body">
+              <div class="offer-title-row">
+                <div>
+                  <h3>Oferta Xbox Retro</h3>
+                  <p>Promoción especial para la colección de Xbox Retro. <b>Solo válida hasta el lunes</b>; después del contador, la colección vuelve a su precio normal.</p>
+                </div>
+                <div class="offer-chip">Hasta el lunes</div>
+              </div>
+              <div class="retro-offer-badges">
+                <span>Cuenta nueva completa</span>
+                <span>3+ juegos = mejor paquete</span>
+                <span>Contraseña y recuperación editables</span>
+              </div>
+              <div class="retro-countdown" id="retroOfferCountdown">
+                <div class="count-box"><b id="retroDays">00</b><span>Días</span></div>
+                <div class="count-box"><b id="retroHours">00</b><span>Horas</span></div>
+                <div class="count-box"><b id="retroMinutes">00</b><span>Min</span></div>
+                <div class="count-box"><b id="retroSeconds">00</b><span>Seg</span></div>
+              </div>
+              <div class="retro-offer-note" id="retroOfferNote">Abre la colección, arma tu paquete y aprovecha la promo antes de que termine el contador.</div>
+              <div class="offer-actions">
+                <button class="offer-btn" id="retroOfferOpenBtn">Ver oferta Xbox Retro</button>
+                <button class="offer-btn alt" id="retroOfferWaBtn">Pedir por WhatsApp</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>`;
+
+    homeTiles.insertAdjacentHTML('afterend', html);
+
+    const packWrap=document.getElementById('ffOfferPackages');
+    let selected=0;
+    function renderPackages(){
+      if(!packWrap) return;
+      packWrap.innerHTML=FF_PACKAGES.map((row,idx)=>`
+        <button type="button" class="ff-package ${idx===selected?'active':''}" data-idx="${idx}">
+          <b>${row[0]} diamantes</b>
+          <span>Recarga directa a tu cuenta</span>
+          <em>${fmtMXN(row[1])}</em>
+        </button>
+      `).join('');
+      const selectedText=document.getElementById('ffOfferSelected');
+      const selectedPrice=document.getElementById('ffOfferPrice');
+      if(selectedText) selectedText.textContent=FF_PACKAGES[selected][0] + ' diamantes';
+      if(selectedPrice) selectedPrice.textContent=fmtMXN(FF_PACKAGES[selected][1]);
+      packWrap.querySelectorAll('.ff-package').forEach(btn=>btn.addEventListener('click',()=>{selected=Number(btn.dataset.idx||0); renderPackages();}));
+    }
+    renderPackages();
+
+    const ffBuy=document.getElementById('ffOfferBuyBtn');
+    if(ffBuy){
+      ffBuy.addEventListener('click',()=>{
+        const pkg=FF_PACKAGES[selected];
+        const msg=`Hola, quiero comprar la oferta de Free Fire: ${pkg[0]} diamantes por ${fmtMXN(pkg[1])}. Mi recarga sería vía ID de Garena.`;
+        window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`,'_blank');
+      });
+    }
+
+    const retroOpen=document.getElementById('retroOfferOpenBtn');
+    if(retroOpen){ retroOpen.addEventListener('click',()=>{ if(typeof openRetroModal==='function') openRetroModal(); }); }
+    const retroWa=document.getElementById('retroOfferWaBtn');
+    if(retroWa){ retroWa.addEventListener('click',()=>{
+      const msg='Hola, quiero información de la oferta de Xbox Retro válida hasta el lunes.';
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`,'_blank');
+    }); }
+
+    const limit=nextMondayEnd();
+    const note=document.getElementById('retroOfferNote');
+    function tick(){
+      const now=new Date();
+      const diff=limit-now;
+      const ids={
+        d:document.getElementById('retroDays'), h:document.getElementById('retroHours'), m:document.getElementById('retroMinutes'), s:document.getElementById('retroSeconds')
+      };
+      if(diff<=0){
+        if(ids.d) ids.d.textContent='00'; if(ids.h) ids.h.textContent='00'; if(ids.m) ids.m.textContent='00'; if(ids.s) ids.s.textContent='00';
+        if(note){ note.textContent='La oferta terminó. A partir de ahora la colección vuelve a su precio normal.'; note.classList.add('retro-expired'); }
+        return;
+      }
+      const total=Math.floor(diff/1000);
+      const days=Math.floor(total/86400);
+      const hours=Math.floor((total%86400)/3600);
+      const mins=Math.floor((total%3600)/60);
+      const secs=total%60;
+      if(ids.d) ids.d.textContent=String(days).padStart(2,'0');
+      if(ids.h) ids.h.textContent=String(hours).padStart(2,'0');
+      if(ids.m) ids.m.textContent=String(mins).padStart(2,'0');
+      if(ids.s) ids.s.textContent=String(secs).padStart(2,'0');
+    }
+    tick();
+    setInterval(tick,1000);
+  }
+
+  const originalOpen=window.vgAdminOpen;
+  if(typeof originalOpen==='function'){
+    window.vgAdminOpen=function(){
+      const r=originalOpen.apply(this, arguments);
+      toggleAdminLoginView();
+      return r;
+    }
+  }
+  document.addEventListener('DOMContentLoaded', ()=>{
+    mountOffersSection();
+    toggleAdminLoginView();
+  });
 })();
 </script>
 
