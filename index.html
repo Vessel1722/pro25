@@ -13,7 +13,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="https://www.vesselgames.xyz/portada.png" />
   <link rel="preconnect" href="https://i.imgur.com" />
-  <link rel="preload" as="video" href="https://i.imgur.com/9j4rD8c.mp4" type="video/mp4" fetchpriority="high" /><script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=a1WDzhTIA5BT0_4LABG7O8bzK5NSEYi1-aIPwVLpK-Yqx_di_Sxsyk2QZF7j3GXS44Q7TIycs9Shi-RUbUKuSlB-oiLpWpjM6-5de3NdC5Ne3YHCxFybY4QgY2B2YYxUGIn8uK6ZXvrWedJ1XeC1PDkri_rb-bwxDHguiofyiwJ5UK7GMRjuKOkcCB8yTHpA7dntsfGtwo3LZ3hNC9_5F-_yrFl_q6E-f2y7sfucfxf2gyvtqtCIjqx7iBnrOeuETpjXlTHc_ABcjHz2JLemHw" charset="UTF-8"></script><style>
+  <link rel="preload" as="video" href="https://i.imgur.com/9j4rD8c.mp4" type="video/mp4" fetchpriority="high" /><style>
     :root {
       --bg:#080a12; --panel:#111522; --panel2:#161b2b; --line:rgba(255,255,255,.10);
       --text:#f6f8ff; --muted:#aab2c8; --soft:#727b96; --brand:#8b5cf6; --brand2:#19e6c1;
@@ -7503,6 +7503,195 @@ setTimeout(()=>{ensureSections();bindTabs();renderSettings();},600);
     mountOffersSection();
     toggleAdminLoginView();
   });
+})();
+</script>
+
+
+<style id="vg-offers-freefire-v55">
+  /* ===== v55 OFERTAS FREE FIRE ===== */
+  #offersShowcase .offers-head p{display:none !important;}
+  #offersShowcase .offers-grid{grid-template-columns:1fr !important;}
+  #offersShowcase .offer-retro{display:none !important;}
+  #offersShowcase .offer-freefire{grid-template-columns:360px minmax(0,1fr) !important;}
+  #offersShowcase .offer-card{border-radius:32px !important;}
+
+  .ff-week-title{
+    margin:0 !important;
+    font-size:clamp(2.2rem,4vw,4.2rem) !important;
+    line-height:.98 !important;
+    text-transform:uppercase !important;
+    letter-spacing:.02em !important;
+    background:linear-gradient(90deg,#ffffff 0%,#dffcfb 15%,#8B5CF6 35%,#22F1D1 52%,#ffffff 70%,#8B5CF6 85%,#ffffff 100%);
+    background-size:220% auto;
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent !important;
+    animation:ffTitleShine 7s linear infinite;
+    text-shadow:0 0 24px rgba(34,241,209,.08);
+  }
+  @keyframes ffTitleShine{0%{background-position:0% center}100%{background-position:220% center}}
+  .ff-offer-badge-animated{
+    display:inline-flex;align-items:center;gap:8px;
+    animation:ffBadgePulse 2.6s ease-in-out infinite;
+  }
+  @keyframes ffBadgePulse{0%,100%{transform:translateY(0);box-shadow:0 0 0 rgba(34,241,209,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 10px rgba(34,241,209,.0),0 0 26px rgba(34,241,209,.18)}}
+
+  .ff-only-wrapper{display:grid;grid-template-columns:380px minmax(0,1fr);gap:22px;align-items:stretch;}
+  .ff-only-media{position:relative;overflow:hidden;border-radius:28px;background:#090f20;border:1px solid rgba(255,255,255,.08);min-height:100%;}
+  .ff-only-media img{width:100%;height:100%;display:block;object-fit:cover;object-position:center;}
+  .ff-only-media::before{content:"SOLO ESTA SEMANA";position:absolute;left:16px;top:16px;z-index:2;padding:9px 14px;border-radius:999px;background:rgba(5,12,24,.86);border:1px solid rgba(34,241,209,.24);color:#e3fffb;font-size:.76rem;font-weight:950;letter-spacing:.05em;}
+  .ff-only-media::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0) 38%, rgba(0,0,0,.48) 100%);pointer-events:none;}
+  .ff-media-caption{position:absolute;left:18px;right:18px;bottom:16px;z-index:2;padding:14px 16px;border-radius:18px;background:rgba(8,12,25,.62);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08)}
+  .ff-media-caption b{display:block;font-size:1.2rem;color:#fff;line-height:1.05}
+  .ff-media-caption span{display:block;margin-top:7px;color:#b8c3dd;font-size:.92rem;line-height:1.45}
+
+  .ff-only-body{display:flex;flex-direction:column;gap:14px;min-width:0;}
+  .ff-only-title-row{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+  .ff-only-title-row h3{margin:0 !important;font-size:clamp(1.8rem,3vw,2.6rem) !important;line-height:1.04 !important;}
+  .ff-only-title-row p{margin:8px 0 0 !important;color:#b7c1d8 !important;line-height:1.6 !important;max-width:760px !important;}
+  .ff-only-callout{align-self:flex-start;padding:10px 14px;border-radius:999px;border:1px solid rgba(34,241,209,.24);background:rgba(34,241,209,.08);color:#e5fffc;font-size:.8rem;font-weight:950;white-space:nowrap;}
+  .ff-info-note{padding:13px 15px;border-radius:18px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.18);color:#ece5ff;font-size:.94rem;line-height:1.55}
+  .ff-only-packages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
+  .ff-only-package{position:relative;padding:16px;border-radius:20px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.02));text-align:left;cursor:pointer;transition:.22s ease;min-height:106px;display:flex;flex-direction:column;justify-content:space-between}
+  .ff-only-package:hover{transform:translateY(-2px);border-color:rgba(34,241,209,.22);}
+  .ff-only-package.active{border-color:rgba(34,241,209,.38);background:linear-gradient(180deg, rgba(34,241,209,.12), rgba(34,241,209,.03));box-shadow:0 14px 30px rgba(0,0,0,.26)}
+  .ff-only-package strong{display:block;font-size:1.05rem;line-height:1.15;color:#fff;}
+  .ff-only-package small{display:block;margin-top:8px;color:#aeb9d6;font-size:.88rem;line-height:1.35;}
+  .ff-only-package em{display:block;margin-top:10px;font-style:normal;font-size:1.14rem;font-weight:1000;color:#22F1D1;}
+
+  .ff-purchase-box{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:16px 18px;border-radius:22px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.018));}
+  .ff-purchase-meta{display:flex;gap:22px;flex-wrap:wrap;align-items:center}
+  .ff-purchase-meta div span{display:block;color:#95a4c3;font-size:.77rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+  .ff-purchase-meta div b{display:block;margin-top:6px;color:#fff;font-size:1.08rem}
+  .ff-purchase-meta .ff-total b{font-size:1.42rem;color:#22F1D1}
+  .ff-only-actions{display:flex;gap:12px;flex-wrap:wrap}
+  .ff-offer-btn{border:none;cursor:pointer;border-radius:18px;padding:14px 20px;font-size:.96rem;font-weight:1000;color:#fff;background:linear-gradient(135deg,#8B5CF6 0%,#4B6BFF 52%,#22F1D1 100%);box-shadow:0 14px 28px rgba(0,0,0,.22)}
+  .ff-offer-btn.alt{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);color:#e3eaff;box-shadow:none}
+
+  @media(max-width:1180px){
+    .ff-only-wrapper{grid-template-columns:1fr !important;}
+    .ff-only-media{min-height:360px !important;}
+  }
+  @media(max-width:860px){
+    .ff-only-packages{grid-template-columns:repeat(2,minmax(0,1fr)) !important;}
+    .ff-purchase-box{grid-template-columns:1fr !important;}
+  }
+  @media(max-width:580px){
+    .ff-only-packages{grid-template-columns:1fr !important;}
+    .ff-week-title{font-size:clamp(1.8rem,8vw,2.6rem) !important;}
+    .ff-only-media{min-height:260px !important;}
+  }
+</style>
+<script id="vg-offers-freefire-v55-script">
+(function(){
+  const FF_ONLY_PACKAGES=[
+    ['1,166',161],['2,398',325],['2,970',425],['3,564',492],['4,136',569],['4,796',631],['5,302',723],['5,368',733],['12,320',1477]
+  ];
+  function fmtMXN(n){return '$'+Number(n||0).toLocaleString('es-MX',{maximumFractionDigits:0})+' MXN';}
+  function extractWaNumber(){
+    const links=[...document.querySelectorAll('a[href], button[data-whatsapp], [onclick]')];
+    for(const el of links){
+      const raw=(el.getAttribute('href')||'')+' '+(el.getAttribute('onclick')||'')+' '+(el.dataset.whatsapp||'');
+      const m=raw.match(/wa\.me\/(\d{7,})|phone=(\d{7,})|send\?phone=(\d{7,})/);
+      if(m) return m[1]||m[2]||m[3];
+    }
+    return '526611078412';
+  }
+  function rebuildOffers(){
+    const root=document.getElementById('offersShowcase');
+    if(!root || root.dataset.ffOnlyReady==='1') return false;
+    let ffImage='https://i.imgur.com/8zUIcAF.jpg';
+    const existing=root.querySelector('.offer-freefire img');
+    if(existing && existing.src) ffImage=existing.src;
+    if(!existing && typeof SERVICES!=='undefined'){
+      try{
+        const ff=SERVICES.find(s=>/free fire/i.test((s.title||'')));
+        if(ff && ff.image) ffImage=ff.image;
+      }catch(e){}
+    }
+    root.dataset.ffOnlyReady='1';
+    root.innerHTML=`
+      <div class="offers-head">
+        <div>
+          <span class="badge ff-offer-badge-animated">OFERTAS</span>
+          <h2 class="ff-week-title">OFERTAS ESPECIALES DE LA SEMANA</h2>
+        </div>
+        <div class="offer-chip">PROMOS DESTACADAS Y VISIBLES</div>
+      </div>
+      <article class="offer-card">
+        <div class="ff-only-wrapper">
+          <div class="ff-only-media">
+            <img src="${ffImage}" alt="Oferta Free Fire" referrerpolicy="no-referrer">
+            <div class="ff-media-caption">
+              <b>DIAMANTES FREE FIRE</b>
+              <span>Recargas directas por ID. Atención rápida y precios claros para cada paquete.</span>
+            </div>
+          </div>
+          <div class="ff-only-body">
+            <div class="ff-only-title-row">
+              <div>
+                <h3>OFERTA DE DIAMANTES FREE FIRE</h3>
+                <p>Recargas <b>vía ID directos de Garena</b>. Elige el paquete que quieras y recíbelo de forma directa. También manejamos <b>cantidades mayores por privado</b>.</p>
+              </div>
+              <div class="ff-only-callout">VÍA ID DIRECTOS DE GARENA</div>
+            </div>
+            <div class="ff-only-packages" id="ffOnlyPackages"></div>
+            <div class="ff-purchase-box">
+              <div class="ff-purchase-meta">
+                <div><span>Paquete</span><b id="ffOnlySelected">1,166 diamantes</b></div>
+                <div><span>Tipo</span><b>Recarga directa por ID</b></div>
+                <div class="ff-total"><span>Total</span><b id="ffOnlyPrice">$161 MXN</b></div>
+              </div>
+              <div class="ff-only-actions">
+                <button class="ff-offer-btn" id="ffOnlyBuyBtn">Comprar esta oferta</button>
+                <button class="ff-offer-btn alt" id="ffOnlyAskBtn">Pedir cantidad mayor</button>
+              </div>
+            </div>
+            <div class="ff-info-note">Si buscas una cantidad mayor de diamantes, te la cotizamos por privado. Servicio directo, visible y fácil de comprar.</div>
+          </div>
+        </div>
+      </article>`;
+
+    const wa=extractWaNumber();
+    let selected=0;
+    const wrap=root.querySelector('#ffOnlyPackages');
+    const sel=root.querySelector('#ffOnlySelected');
+    const price=root.querySelector('#ffOnlyPrice');
+    function render(){
+      if(!wrap) return;
+      wrap.innerHTML=FF_ONLY_PACKAGES.map((r,i)=>`
+        <button type="button" class="ff-only-package ${i===selected?'active':''}" data-i="${i}">
+          <strong>${r[0]} diamantes</strong>
+          <small>Recarga directa a tu cuenta</small>
+          <em>${fmtMXN(r[1])}</em>
+        </button>`).join('');
+      if(sel) sel.textContent=FF_ONLY_PACKAGES[selected][0] + ' diamantes';
+      if(price) price.textContent=fmtMXN(FF_ONLY_PACKAGES[selected][1]);
+      wrap.querySelectorAll('.ff-only-package').forEach(btn=>btn.addEventListener('click',()=>{selected=Number(btn.dataset.i||0); render();}));
+    }
+    render();
+    const buy=root.querySelector('#ffOnlyBuyBtn');
+    if(buy) buy.addEventListener('click',()=>{
+      const p=FF_ONLY_PACKAGES[selected];
+      const msg=`Hola, quiero comprar la oferta de Free Fire: ${p[0]} diamantes por ${fmtMXN(p[1])}. La recarga sería vía ID directos de Garena.`;
+      window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`,'_blank');
+    });
+    const ask=root.querySelector('#ffOnlyAskBtn');
+    if(ask) ask.addEventListener('click',()=>{
+      const msg='Hola, quiero cotizar una cantidad mayor de diamantes Free Fire por privado.';
+      window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`,'_blank');
+    });
+    return true;
+  }
+  function boot(){
+    let tries=0;
+    const timer=setInterval(()=>{
+      tries++;
+      if(rebuildOffers() || tries>40) clearInterval(timer);
+    },200);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
+  else boot();
 })();
 </script>
 
